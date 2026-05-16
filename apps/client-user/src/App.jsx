@@ -1,13 +1,21 @@
-import Home from "./pages/Home";
-import "./index.css"
+// App.jsx
 
 
 function App() {
   return (
-    <>
-      <Home />
-    </>
+    <MainLayout>
+
+      <Routes>
+
+        <Route
+          path="/"
+          element={<Home />}
+        />
+
+      </Routes>
+
+    </MainLayout>
   );
-}
+};
 
 export default App;

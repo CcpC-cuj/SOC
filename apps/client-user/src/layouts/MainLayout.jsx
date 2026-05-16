@@ -1,20 +1,32 @@
+// MainLayout.jsx
+
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 
-function MainLayout({ children }) {
+const MainLayout = ({ children }) => {
   return (
-    <div className="bg-[#F6E28B] min-h-screen overflow-x-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-[#050816] text-white">
 
-      <Navbar />
+      {/* CONTENT */}
+      <div className="relative z-10">
 
-      <main>
-        {children}
-      </main>
+        {/* NAVBAR */}
+        <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
+          <Navbar />
+        </div>
 
-      <Footer />
+        {/* PAGE */}
+        <main className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
+          {children}
+        </main>
+
+        {/* FOOTER */}
+        <Footer />
+
+      </div>
 
     </div>
   );
-}
+};
 
 export default MainLayout;

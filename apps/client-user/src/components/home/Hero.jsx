@@ -1,36 +1,64 @@
 // Hero.jsx
 
 import { motion } from "framer-motion";
-import FloatingBlobs from "./FloatingBlobs";
+
+import NeuralBackground from "../common/NeuralBackground";
 import HeroDashboard from "./HeroDashboard";
 import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
    const navigate = useNavigate();
   return (
-    <section className="relative flex min-h-screen items-center overflow-hidden">
-      
-      {/* BACKGROUND BLOBS */}
-      <FloatingBlobs />
+    <section className="relative overflow-hidden py-20 lg:py-28">
 
-      {/* MAIN CONTAINER */}
-      <div className="main-container grid gap-16 py-24 lg:grid-cols-2 lg:items-center">
-        
+      {/* NEURAL BACKGROUND */}
+      <NeuralBackground />
+
+      {/* BACKGROUND GLOW */}
+      {/* <div className="absolute left-[-100px] top-[-100px] h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" /> */}
+
+      <div className="absolute bottom-[-100px] right-[-100px] h-72 w-72 rounded-full bg-purple-500/10 blur-3xl" />
+
+      {/* MAIN WRAPPER */}
+      <div className="relative z-10 grid items-center gap-16 lg:grid-cols-2">
+
         {/* LEFT CONTENT */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="relative z-10"
-        >
-          
+        <div>
+
           {/* BADGE */}
-          <div className="badge mb-6">
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
+            className="mb-6 inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-5 py-2 text-sm font-medium text-cyan-300"
+          >
             ⚡ Collaborative Developer Ecosystem
-          </div>
+          </motion.div>
 
           {/* HEADING */}
-          <h1 className="mb-6 text-5xl font-black leading-tight sm:text-6xl md:text-7xl">
+          <motion.h1
+            initial={{
+              opacity: 0,
+              y: 30,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.8,
+            }}
+            className="max-w-5xl text-5xl font-black leading-tight sm:text-6xl md:text-7xl"
+          >
+
             Build.
             <br />
 
@@ -40,13 +68,29 @@ const Hero = () => {
             <span className="gradient-text">
               Innovate.
             </span>
-          </h1>
+
+          </motion.h1>
 
           {/* DESCRIPTION */}
-          <p className="mb-8 max-w-2xl text-lg leading-relaxed text-slate-300 md:text-xl">
-            Join Seasons of Code and work on real-world projects with
-            passionate developers, mentors, and innovators.
-          </p>
+          <motion.p
+            initial={{
+              opacity: 0,
+              y: 30,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 1,
+            }}
+            className="mt-8 max-w-2xl text-lg leading-8 text-slate-300 md:text-xl"
+          >
+            Seasons of Code is a year-round coding platform
+            where students collaborate on projects,
+            participate in hackathons, and grow together
+            through innovation and teamwork.
+          </motion.p>
 
           {/* BUTTONS */}
           <div className="flex flex-wrap gap-4">
@@ -61,52 +105,79 @@ const Hero = () => {
           </div>
 
           {/* STATS */}
-          <div className="mt-12 flex flex-wrap gap-8">
-            
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 30,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 1.4,
+            }}
+            className="mt-16 flex flex-wrap gap-10"
+          >
+
             <div>
-              <h3 className="text-3xl font-black text-cyan-400">
+              <h3 className="text-4xl font-black text-cyan-400">
                 500+
               </h3>
 
-              <p className="text-slate-400">
+              <p className="mt-2 text-slate-400">
                 Developers
               </p>
             </div>
 
             <div>
-              <h3 className="text-3xl font-black text-purple-400">
+              <h3 className="text-4xl font-black text-purple-400">
                 50+
               </h3>
 
-              <p className="text-slate-400">
+              <p className="mt-2 text-slate-400">
                 Projects
               </p>
             </div>
 
             <div>
-              <h3 className="text-3xl font-black text-pink-400">
+              <h3 className="text-4xl font-black text-pink-400">
                 20+
               </h3>
 
-              <p className="text-slate-400">
+              <p className="mt-2 text-slate-400">
                 Mentors
               </p>
             </div>
 
-          </div>
-        </motion.div>
+          </motion.div>
+
+        </div>
 
         {/* RIGHT SIDE DASHBOARD */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1 }}
+          initial={{
+            opacity: 0,
+            scale: 0.9,
+            x: 40,
+          }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            x: 0,
+          }}
+          transition={{
+            duration: 1,
+          }}
           className="relative"
         >
+
           <HeroDashboard />
+
         </motion.div>
 
       </div>
+
     </section>
   );
 };

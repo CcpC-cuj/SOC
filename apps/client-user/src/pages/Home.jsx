@@ -1,8 +1,6 @@
 // Home.jsx
 
-import Navbar from "../components/common/Navbar";
-import Footer from "../components/common/Footer";
-import NeuralBackground from "../components/common/NeuralBackground";
+import MainLayout from "../layouts/MainLayout";
 
 import Hero from "../components/home/Hero";
 import About from "../components/home/About";
@@ -13,22 +11,14 @@ import CTASection from "../components/home/CTASection";
 
 const Home = () => {
   return (
-    <div className="relative overflow-hidden bg-[#050816] text-white">
-      <NeuralBackground />
-
-      <Navbar />
-
-      <main className="relative z-10">
-        <Hero />
-        <About />
-        <Features />
-        <StatsSection />
-        <TimelineSection />
-        <CTASection />
-      </main>
-
-      <Footer />
-    </div>
+    <>
+      <Hero />
+      <About />
+      <Features />
+      <StatsSection />
+      <TimelineSection />
+      <CTASection />
+    </>
   );
 };
 
