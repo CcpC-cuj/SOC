@@ -3,8 +3,10 @@
 import { motion } from "framer-motion";
 import FloatingBlobs from "./FloatingBlobs";
 import HeroDashboard from "./HeroDashboard";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+   const navigate = useNavigate();
   return (
     <section className="relative flex min-h-screen items-center overflow-hidden">
       
@@ -49,12 +51,11 @@ const Hero = () => {
           {/* BUTTONS */}
           <div className="flex flex-wrap gap-4">
             
-            <button className="gradient-button">
+            <button
+              onClick={() => navigate("/register")}
+              className="gradient-button"
+            >
               Join Now
-            </button>
-
-            <button className="secondary-button">
-              Explore Projects
             </button>
 
           </div>
