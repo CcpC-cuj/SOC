@@ -34,25 +34,25 @@ const Register = () => {
   const [selectedProjects, setSelectedProjects] = useState([]);
   const [selectedTeams, setSelectedTeams] = useState([]);
 
-  const handleProjectSelect = (project) => {
-    if (selectedProjects.includes(project)) {
-      setSelectedProjects(
-        selectedProjects.filter((p) => p !== project)
-      );
-    } else if (selectedProjects.length < 2) {
-      setSelectedProjects([...selectedProjects, project]);
-    }
-  };
+//   const handleProjectSelect = (project) => {
+//     if (selectedProjects.includes(project)) {
+//       setSelectedProjects(
+//         selectedProjects.filter((p) => p !== project)
+//       );
+//     } else if (selectedProjects.length < 2) {
+//       setSelectedProjects([...selectedProjects, project]);
+//     }
+//   };
 
-  const handleTeamSelect = (team) => {
-    if (selectedTeams.includes(team)) {
-      setSelectedTeams(
-        selectedTeams.filter((t) => t !== team)
-      );
-    } else {
-      setSelectedTeams([...selectedTeams, team]);
-    }
-  };
+//   const handleTeamSelect = (team) => {
+//     if (selectedTeams.includes(team)) {
+//       setSelectedTeams(
+//         selectedTeams.filter((t) => t !== team)
+//       );
+//     } else {
+//       setSelectedTeams([...selectedTeams, team]);
+//     }
+//   };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050816] text-white">
@@ -161,67 +161,72 @@ const Register = () => {
                   className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
                 />
               </div>
+              
             </div>
+
 
             {/* RIGHT */}
-            <div className="space-y-10">
-              
-              {/* PROJECTS */}
-              <div>
-                <label className="mb-4 flex items-center gap-2 text-lg font-bold">
-                  <Layers3 size={20} />
-                  Select Projects (Max 2)
-                </label>
+            
 
-                <div className="grid gap-4">
-                  {projects.map((project) => (
-                    <button
-                      key={project}
-                      onClick={() =>
-                        handleProjectSelect(project)
-                      }
-                      className={`rounded-2xl border px-5 py-4 text-left transition ${
-                        selectedProjects.includes(project)
-                          ? "border-cyan-500 bg-cyan-500/10"
-                          : "border-white/10 bg-white/5 hover:border-cyan-500/40"
-                      }`}
-                    >
-                      {project}
-                    </button>
-                  ))}
-                </div>
-              </div>
+<div className="space-y-10">
 
-              {/* TEAMS */}
-              <div>
-                <label className="mb-4 flex items-center gap-2 text-lg font-bold">
-                  <Users size={20} />
-                  Select Teams
-                </label>
+  {/* PROJECT INTERESTS */}
+  
+  {/* EXPERIENCE */}
+  <div>
 
-                <div className="flex flex-wrap gap-4">
-                  {teams.map((team) => (
-                    <button
-                      key={team}
-                      onClick={() => handleTeamSelect(team)}
-                      className={`rounded-2xl px-5 py-3 transition ${
-                        selectedTeams.includes(team)
-                          ? "bg-gradient-to-r from-cyan-500 to-purple-600"
-                          : "border border-white/10 bg-white/5 hover:border-cyan-500/40"
-                      }`}
-                    >
-                      {team}
-                    </button>
-                  ))}
-                </div>
-              </div>
+    <label className="mb-5 flex items-center gap-3 text-xl font-bold">
+      <Code2 size={22} />
+      Experience Level
+    </label>
 
-              {/* SUBMIT */}
-              <button className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-5 text-lg font-bold transition duration-300 hover:scale-[1.02]">
-                Register Now
-                <ArrowRight size={20} />
-              </button>
-            </div>
+    <div className="grid grid-cols-2 gap-4">
+
+      <button className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-cyan-500/40 hover:bg-white/[0.05]">
+        Beginner
+      </button>
+
+      <button className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-cyan-500/40 hover:bg-white/[0.05]">
+        Intermediate
+      </button>
+
+      <button className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-cyan-500/40 hover:bg-white/[0.05]">
+        Advanced
+      </button>
+
+      <button className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-cyan-500/40 hover:bg-white/[0.05]">
+        Open Source
+      </button>
+
+    </div>
+
+  </div>
+
+  {/* INFO BOX */}
+  <div className="rounded-3xl border border-cyan-500/20 bg-cyan-500/5 p-6">
+
+    <h3 className="mb-3 text-lg font-bold text-cyan-300">
+      How Team Selection Works 🚀
+    </h3>
+
+    <p className="leading-7 text-slate-300">
+      After registration, you’ll get access to the project dashboard
+      where you can join specific teams like Frontend, Backend,
+      AI/ML, UI/UX, DevOps, and more for each selected project.
+    </p>
+
+  </div>
+
+  {/* SUBMIT BUTTON */}
+  <button className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-5 text-lg font-bold transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(34,211,238,0.25)]">
+
+    Register Now
+
+    <ArrowRight size={20} />
+
+  </button>
+
+</div>
 
           </div>
         </motion.div>
