@@ -8,8 +8,8 @@ import Hero from "../components/home/Hero";
 import About from "../components/home/About";
 import Features from "../components/home/Features";
 import StatsSection from "../components/home/StatsSection";
-// import TimelineSection from "../components/TimelineSection";
-// import CTASection from "../components/CTASection";
+import TimelineSection from "../components/home/TimelineSection";
+import CTASection from "../components/home/CTASection";
 
 const Home = () => {
   return (
@@ -23,8 +23,8 @@ const Home = () => {
         <About />
         <Features />
         <StatsSection />
-        {/* <TimelineSection />
-        <CTASection /> */}
+        <TimelineSection />
+        <CTASection />
       </main>
 
       <Footer />
