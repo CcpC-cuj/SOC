@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 
 import NeuralBackground from "../common/NeuralBackground";
 import HeroDashboard from "./HeroDashboard";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+   const navigate = useNavigate();
   return (
     <section className="relative overflow-hidden py-20 lg:py-28">
 
@@ -91,21 +93,8 @@ const Hero = () => {
           </motion.p>
 
           {/* BUTTONS */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 30,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 1.2,
-            }}
-            className="mt-10 flex flex-wrap gap-4"
-          >
-
+          <div className="flex flex-wrap gap-4">
+            
             <button className="gradient-button">
               Join Now
             </button>
@@ -114,7 +103,7 @@ const Hero = () => {
               Explore Projects
             </button>
 
-          </motion.div>
+          </div>
 
           {/* STATS */}
           <motion.div
