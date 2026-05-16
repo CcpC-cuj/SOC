@@ -5,12 +5,12 @@ import { motion } from "framer-motion";
 import {
   User,
   Mail,
-  Github,
   Code2,
   Users,
   Layers3,
   ArrowRight,
 } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 
 const projects = [
   "AI Chatbot Platform",
@@ -137,7 +137,7 @@ const Register = () => {
               {/* GITHUB */}
               <div>
                 <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
-                  <Github size={18} />
+                  <FaGithub size={18} />
                   GitHub Profile
                 </label>
 
