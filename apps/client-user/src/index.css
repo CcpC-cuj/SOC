@@ -1,1 +1,142 @@
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap");
+
 @import "tailwindcss";
+
+:root {
+  --background: #fbf8ff;
+  --surface: #ffffff;
+  --surface-light: #f5f2fa;
+
+  --primary: #011463;
+  --primary-light: #bac3ff;
+
+  --secondary: #aa3431;
+  --secondary-light: #fe7269;
+
+  --tertiary: #4cd7f8;
+
+  --text: #1b1b20;
+  --text-light: #454651;
+
+  --outline: #c6c5d3;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #f6e28b;
+  color: var(--text);
+  font-family: "Be Vietnam Pro", sans-serif;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+.nav-link {
+  font-family: "Rubik", sans-serif;
+}
+
+.container-main {
+  max-width: 1280px;
+  margin: auto;
+  padding-inline: 64px;
+}
+
+@media (max-width: 768px) {
+  .container-main {
+    padding-inline: 16px;
+  }
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-shadow {
+  box-shadow: 0 8px 30px rgba(1, 20, 99, 0.08);
+}
+
+.hover-lift {
+  transition: all 0.35s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: white;
+  border-radius: 999px;
+  padding: 16px 32px;
+  font-weight: 600;
+  transition: 0.3s ease;
+  box-shadow: 0 10px 25px rgba(1, 20, 99, 0.2);
+}
+
+.primary-btn:hover {
+  background: var(--secondary-light);
+  transform: translateY(-4px);
+}
+
+.secondary-btn {
+  background: white;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  padding: 16px 32px;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.secondary-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.section-space {
+  padding-block: 120px;
+}
+
+.title-xl {
+  font-size: clamp(3rem, 8vw, 5rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.title-lg {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.text-muted {
+  color: var(--text-light);
+}
+
+.rounded-main {
+  border-radius: 32px;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(70px);
+  opacity: 0.25;
+  z-index: 0;
+}
