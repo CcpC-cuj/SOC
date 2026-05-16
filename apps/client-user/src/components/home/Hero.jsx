@@ -6,46 +6,105 @@ import HeroDashboard from "./HeroDashboard";
 
 const Hero = () => {
   return (
-    <section className="relative flex min-h-screen items-center px-6 py-20">
+    <section className="relative flex min-h-screen items-center overflow-hidden">
+      
+      {/* BACKGROUND BLOBS */}
       <FloatingBlobs />
 
-      <div className="mx-auto grid max-w-7xl gap-16 lg:grid-cols-2 lg:items-center">
+      {/* MAIN CONTAINER */}
+      <div className="main-container grid gap-16 py-24 lg:grid-cols-2 lg:items-center">
+        
+        {/* LEFT CONTENT */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
+          className="relative z-10"
         >
-          <div className="mb-6 inline-flex rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300">
+          
+          {/* BADGE */}
+          <div className="badge mb-6">
             ⚡ Collaborative Developer Ecosystem
           </div>
 
-          <h1 className="mb-6 text-5xl font-black leading-tight md:text-7xl">
+          {/* HEADING */}
+          <h1 className="mb-6 text-5xl font-black leading-tight sm:text-6xl md:text-7xl">
             Build.
             <br />
+
             Collaborate.
             <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-blue-500 bg-clip-text text-transparent">
+
+            <span className="gradient-text">
               Innovate.
             </span>
           </h1>
 
-          <p className="mb-8 max-w-xl text-lg text-slate-300">
+          {/* DESCRIPTION */}
+          <p className="mb-8 max-w-2xl text-lg leading-relaxed text-slate-300 md:text-xl">
             Join Seasons of Code and work on real-world projects with
             passionate developers, mentors, and innovators.
           </p>
 
+          {/* BUTTONS */}
           <div className="flex flex-wrap gap-4">
-            <button className="rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-4 font-bold transition hover:scale-105">
+            
+            <button className="gradient-button">
               Join Now
             </button>
 
-            <button className="rounded-2xl border border-white/20 bg-white/5 px-8 py-4 font-semibold backdrop-blur-lg transition hover:bg-white/10">
+            <button className="secondary-button">
               Explore Projects
             </button>
+
+          </div>
+
+          {/* STATS */}
+          <div className="mt-12 flex flex-wrap gap-8">
+            
+            <div>
+              <h3 className="text-3xl font-black text-cyan-400">
+                500+
+              </h3>
+
+              <p className="text-slate-400">
+                Developers
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-3xl font-black text-purple-400">
+                50+
+              </h3>
+
+              <p className="text-slate-400">
+                Projects
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-3xl font-black text-pink-400">
+                20+
+              </h3>
+
+              <p className="text-slate-400">
+                Mentors
+              </p>
+            </div>
+
           </div>
         </motion.div>
 
-        <HeroDashboard />
+        {/* RIGHT SIDE DASHBOARD */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+          className="relative"
+        >
+          <HeroDashboard />
+        </motion.div>
+
       </div>
     </section>
   );

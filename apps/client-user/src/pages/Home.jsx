@@ -13,7 +13,7 @@ import CTASection from "../components/home/CTASection";
 
 const Home = () => {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050816] text-white">
+    <div className="relative overflow-hidden bg-[#050816] text-white">
       <NeuralBackground />
 
       <Navbar />

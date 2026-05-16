@@ -1,38 +1,88 @@
 // Navbar.jsx
 
 import { Link } from "react-router-dom";
+import { Menu } from "lucide-react";
 
 const Navbar = () => {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link to="/" className="text-2xl font-bold tracking-wide">
-          <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-            SoC
-          </span>
-        </Link>
+    <header className="navbar-blur sticky top-0 z-50">
+      
+      <div className="main-container">
+        
+        <div className="flex h-20 items-center justify-between">
+          
+          {/* LOGO */}
+          <Link
+            to="/"
+            className="flex items-center gap-3"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 text-xl font-black shadow-lg shadow-cyan-500/20">
+              S
+            </div>
 
-        <nav className="hidden gap-8 md:flex">
-          <a href="#about" className="hover:text-cyan-400">
-            About
-          </a>
+            <div>
+              <h1 className="text-2xl font-black tracking-wide">
+                <span className="gradient-text">
+                  SoC
+                </span>
+              </h1>
 
-          <a href="#features" className="hover:text-cyan-400">
-            Features
-          </a>
+              <p className="-mt-1 text-xs text-slate-400">
+                Seasons of Code
+              </p>
+            </div>
+          </Link>
 
-          <a href="#timeline" className="hover:text-cyan-400">
-            Timeline
-          </a>
+          {/* NAVIGATION */}
+          <nav className="hidden items-center gap-8 md:flex">
+            
+            <a
+              href="#about"
+              className="text-slate-300 transition hover:text-cyan-400"
+            >
+              About
+            </a>
 
-          <a href="#contact" className="hover:text-cyan-400">
-            Contact
-          </a>
-        </nav>
+            <a
+              href="#features"
+              className="text-slate-300 transition hover:text-cyan-400"
+            >
+              Features
+            </a>
 
-        <button className="rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 px-5 py-2 font-semibold transition hover:scale-105">
-          Join Now
-        </button>
+            <a
+              href="#timeline"
+              className="text-slate-300 transition hover:text-cyan-400"
+            >
+              Timeline
+            </a>
+
+            <a
+              href="#contact"
+              className="text-slate-300 transition hover:text-cyan-400"
+            >
+              Contact
+            </a>
+
+          </nav>
+
+          {/* RIGHT SIDE */}
+          <div className="flex items-center gap-4">
+            
+            {/* DESKTOP BUTTON */}
+            <button className="gradient-button hidden md:block">
+              Join Now
+            </button>
+
+            {/* MOBILE MENU */}
+            <button className="glass-card flex h-12 w-12 items-center justify-center md:hidden">
+              <Menu size={22} />
+            </button>
+
+          </div>
+
+        </div>
+
       </div>
     </header>
   );
