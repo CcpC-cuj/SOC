@@ -1,30 +1,105 @@
-@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap");
+/* =========================
+   TAILWIND V4 IMPORTS
+========================= */
 
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/* =========================
+   THEME VARIABLES
+========================= */
 
 :root {
-  --background: #fbf8ff;
-  --surface: #ffffff;
-  --surface-light: #f5f2fa;
+  --radius: 0.875rem;
 
-  --primary: #011463;
-  --primary-light: #bac3ff;
+  /* Background */
+  --background: #050816;
+  --foreground: #f8fafc;
 
-  --secondary: #aa3431;
-  --secondary-light: #fe7269;
+  /* Surfaces */
+  --surface-1: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --surface-3: rgba(255, 255, 255, 0.08);
 
-  --tertiary: #4cd7f8;
+  /* Colors */
+  --primary: #7c4dff;
+  --secondary: #22d3ee;
 
-  --text: #1b1b20;
-  --text-light: #454651;
+  --muted: #161b2f;
+  --muted-foreground: #94a3b8;
 
-  --outline: #c6c5d3;
+  --border: rgba(255, 255, 255, 0.08);
+
+  /* Neon */
+  --neon-cyan: #22d3ee;
+  --neon-blue: #7c4dff;
+  --neon-violet: #a855f7;
+  --neon-amber: #facc15;
+
+  /* Gradients */
+  --gradient-primary:
+    linear-gradient(
+      135deg,
+      #22d3ee,
+      #7c4dff
+    );
+
+  --gradient-aurora:
+    linear-gradient(
+      120deg,
+      #22d3ee,
+      #7c4dff,
+      #a855f7
+    );
+
+  --gradient-text:
+    linear-gradient(
+      120deg,
+      #ffffff 0%,
+      #b8c1ec 50%,
+      #7c4dff 100%
+    );
+
+  --gradient-hero:
+    radial-gradient(
+      ellipse at top,
+      rgba(124, 77, 255, 0.25),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at bottom right,
+      rgba(34, 211, 238, 0.18),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      #050816,
+      #090d1f
+    );
+
+  /* Shadows */
+  --shadow-glow-blue:
+    0 0 40px rgba(124, 77, 255, 0.45);
+
+  --shadow-glow-cyan:
+    0 0 40px rgba(34, 211, 238, 0.45);
+
+  --shadow-glow-violet:
+    0 0 60px rgba(168, 85, 247, 0.45);
+
+  --shadow-elev:
+    0 20px 60px -20px rgba(0, 0, 0, 0.6);
 }
+
+/* =========================
+   BASE STYLES
+========================= */
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  border-color: var(--border);
 }
 
 html {
@@ -32,10 +107,29 @@ html {
 }
 
 body {
-  background: #f6e28b;
-  color: var(--text);
-  font-family: "Be Vietnam Pro", sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+
+  font-family:
+    Inter,
+    system-ui,
+    sans-serif;
+
   overflow-x: hidden;
+
+  -webkit-font-smoothing: antialiased;
+
+  background-image:
+    radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(168, 85, 247, 0.18),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 90% 20%,
+      rgba(34, 211, 238, 0.12),
+      transparent 60%
+    );
 }
 
 h1,
@@ -43,100 +137,257 @@ h2,
 h3,
 h4,
 h5,
-h6,
-button,
-.nav-link {
-  font-family: "Rubik", sans-serif;
+h6 {
+  font-family:
+    "Space Grotesk",
+    sans-serif;
+
+  letter-spacing: -0.02em;
 }
 
-.container-main {
-  max-width: 1280px;
-  margin: auto;
-  padding-inline: 64px;
+/* =========================
+   SCROLLBAR
+========================= */
+
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-@media (max-width: 768px) {
-  .container-main {
-    padding-inline: 16px;
+::-webkit-scrollbar-track {
+  background: #050816;
+}
+
+::-webkit-scrollbar-thumb {
+  background:
+    linear-gradient(
+      to bottom,
+      #22d3ee,
+      #7c4dff
+    );
+
+  border-radius: 20px;
+}
+
+/* =========================
+   TEXT UTILITIES
+========================= */
+
+.text-gradient {
+  background: var(--gradient-text);
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  color: transparent;
+}
+
+.text-gradient-aurora {
+  background: var(--gradient-aurora);
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  color: transparent;
+}
+
+/* =========================
+   BACKGROUND UTILITIES
+========================= */
+
+.bg-hero {
+  background: var(--gradient-hero);
+}
+
+.bg-primary-gradient {
+  background: var(--gradient-primary);
+}
+
+.bg-aurora {
+  background: var(--gradient-aurora);
+}
+
+/* =========================
+   GLASSMORPHISM
+========================= */
+
+.glass {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0.01)
+    );
+
+  backdrop-filter:
+    blur(20px)
+    saturate(160%);
+
+  -webkit-backdrop-filter:
+    blur(20px)
+    saturate(160%);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+}
+
+.glass-strong {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.02)
+    );
+
+  backdrop-filter:
+    blur(28px)
+    saturate(180%);
+
+  -webkit-backdrop-filter:
+    blur(28px)
+    saturate(180%);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.1);
+}
+
+/* =========================
+   GLOW EFFECTS
+========================= */
+
+.glow-blue {
+  box-shadow: var(--shadow-glow-blue);
+}
+
+.glow-cyan {
+  box-shadow: var(--shadow-glow-cyan);
+}
+
+.glow-violet {
+  box-shadow: var(--shadow-glow-violet);
+}
+
+/* =========================
+   GRID BACKGROUND
+========================= */
+
+.grid-bg {
+  background-image:
+    linear-gradient(
+      rgba(255,255,255,0.05) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0.05) 1px,
+      transparent 1px
+    );
+
+  background-size: 48px 48px;
+
+  mask-image:
+    radial-gradient(
+      ellipse at center,
+      black 30%,
+      transparent 75%
+    );
+}
+
+/* =========================
+   BORDER GRADIENT
+========================= */
+
+.border-gradient {
+  position: relative;
+  background-clip: padding-box;
+}
+
+.border-gradient::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  padding: 1px;
+
+  border-radius: inherit;
+
+  background: var(--gradient-aurora);
+
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+
+  -webkit-mask-composite: xor;
+
+  mask-composite: exclude;
+
+  pointer-events: none;
+
+  opacity: 0.7;
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+
+@keyframes float-slow {
+  0%, 100% {
+    transform:
+      translateY(0)
+      translateX(0);
+  }
+
+  50% {
+    transform:
+      translateY(-20px)
+      translateX(10px);
   }
 }
 
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
-.card-shadow {
-  box-shadow: 0 8px 30px rgba(1, 20, 99, 0.08);
+@keyframes aurora-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
-.hover-lift {
-  transition: all 0.35s ease;
+.animate-float-slow {
+  animation:
+    float-slow
+    10s
+    ease-in-out
+    infinite;
 }
 
-.hover-lift:hover {
-  transform: translateY(-8px);
+.animate-pulse-glow {
+  animation:
+    pulse-glow
+    3s
+    ease-in-out
+    infinite;
 }
 
-.primary-btn {
-  background: var(--primary);
-  color: white;
-  border-radius: 999px;
-  padding: 16px 32px;
-  font-weight: 600;
-  transition: 0.3s ease;
-  box-shadow: 0 10px 25px rgba(1, 20, 99, 0.2);
-}
+.animate-aurora {
+  background-size: 200% 200%;
 
-.primary-btn:hover {
-  background: var(--secondary-light);
-  transform: translateY(-4px);
-}
-
-.secondary-btn {
-  background: white;
-  color: var(--primary);
-  border: 2px solid var(--primary);
-  border-radius: 999px;
-  padding: 16px 32px;
-  font-weight: 600;
-  transition: 0.3s ease;
-}
-
-.secondary-btn:hover {
-  background: var(--primary);
-  color: white;
-}
-
-.section-space {
-  padding-block: 120px;
-}
-
-.title-xl {
-  font-size: clamp(3rem, 8vw, 5rem);
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.title-lg {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.text-muted {
-  color: var(--text-light);
-}
-
-.rounded-main {
-  border-radius: 32px;
-}
-
-.blob {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(70px);
-  opacity: 0.25;
-  z-index: 0;
+  animation:
+    aurora-shift
+    12s
+    ease
+    infinite;
 }

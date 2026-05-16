@@ -1,118 +1,91 @@
-import { motion } from "framer-motion";
-
 import {
-  HiUsers,
-  HiRocketLaunch,
-  HiTrophy,
-  HiArrowRight,
-} from "react-icons/hi2";
+  Brain,
+  Workflow,
+  GitBranch,
+  LineChart,
+  Users,
+  ShieldCheck,
+} from "lucide-react";
 
-const features = [
-  {
-    icon: <HiUsers />,
-    title: "Collaborative Spirit",
-    desc: "Work in teams of 3 to 5 on complex challenges that require coordination, Git flow mastery, and shared vision.",
-    color: "border-[var(--secondary)]",
-    bg: "bg-[#ffd8d4]",
-    text: "text-[var(--secondary)]",
-  },
+import SectionHeader from "./SectionHeader";
 
-  {
-    icon: <HiRocketLaunch />,
-    title: "Mentorship",
-    desc: "Get 1-on-1 guidance from industry veterans and former SoC winners who help you debug, design, and deploy.",
-    color: "border-[#4cd7f8]",
-    bg: "bg-[#c7f6ff]",
-    text: "text-[#0089a3]",
-  },
+export default function Features() {
+  const items = [
+    {
+      icon: Brain,
+      title: "AI Co-pilots",
+      desc: "Smart assistants that help your workflow.",
+    },
 
-  {
-    icon: <HiTrophy />,
-    title: "Career Perks",
-    desc: "Complete the program to earn an NFT certificate and exclusive referrals to partner companies.",
-    color: "border-[#bac3ff]",
-    bg: "bg-[#dee0ff]",
-    text: "text-[var(--primary)]",
-  },
-];
+    {
+      icon: Workflow,
+      title: "Neural Workflows",
+      desc: "Visual task and project management.",
+    },
 
-const Features = () => {
+    {
+      icon: GitBranch,
+      title: "GitHub Native",
+      desc: "Integrated commits and pull requests.",
+    },
+
+    {
+      icon: LineChart,
+      title: "Live Analytics",
+      desc: "Track productivity and progress live.",
+    },
+
+    {
+      icon: Users,
+      title: "Mentor Matchmaking",
+      desc: "Find mentors based on your interests.",
+    },
+
+    {
+      icon: ShieldCheck,
+      title: "Secure by Default",
+      desc: "Role-based secure collaboration.",
+    },
+  ];
+
   return (
-    <section className="section-space">
-      <div className="container-main">
-        
-        {/* Heading */}
-        <div className="text-center mb-24">
-          <motion.h2
-            initial={{ opacity: 0, y: 70 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="title-lg text-[var(--primary)] mb-6"
-          >
-            What's in for you?
-          </motion.h2>
+    <section className="py-28">
 
-          <motion.p
-            initial={{ opacity: 0, y: 70 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-xl text-muted"
-          >
-            Three pillars of the Seasons of Code experience.
-          </motion.p>
-        </div>
+      <div className="mx-auto max-w-7xl px-6">
 
-        {/* Cards */}
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-          
-          {features.map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 80 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: index * 0.15,
-                duration: 0.7,
-              }}
-              viewport={{ once: true }}
-              whileHover={{
-                y: -12,
-              }}
-              className={`bg-white rounded-[38px] p-10 border-b-[10px] ${item.color} card-shadow group transition-all duration-500`}
+        <SectionHeader
+          eyebrow="Platform"
+          title="Everything a Builder Needs"
+          sub="Modern AI-powered tools built into one ecosystem."
+        />
+
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
+          {items.map((item) => (
+
+            <div
+              key={item.title}
+              className="glass rounded-3xl p-6 hover:-translate-y-1 transition"
             >
-              
-              {/* Icon */}
-              <div
-                className={`w-20 h-20 rounded-full ${item.bg} flex items-center justify-center text-4xl ${item.text} mb-10 group-hover:rotate-12 transition-transform duration-500`}
-              >
-                {item.icon}
-              </div>
 
-              {/* Title */}
-              <h3 className="text-3xl font-bold text-[var(--primary)] mb-6">
+              <item.icon className="h-8 w-8 text-cyan-400" />
+
+              <h3 className="mt-4 text-xl font-bold">
                 {item.title}
               </h3>
 
-              {/* Desc */}
-              <p className="text-lg leading-9 text-muted mb-8">
+              <p className="mt-3 text-muted-foreground">
                 {item.desc}
               </p>
 
-              {/* Link */}
-              <button className={`flex items-center gap-2 font-semibold ${item.text} text-lg group-hover:gap-4 transition-all`}>
-                Learn More
+            </div>
 
-                <HiArrowRight />
-              </button>
-            </motion.div>
           ))}
 
         </div>
+
       </div>
+
     </section>
   );
-};
-
-export default Features;
+}

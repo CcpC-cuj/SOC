@@ -1,29 +1,32 @@
-import MainLayout from "../layouts/MainLayout";
-
-import Hero from "../components/home/HeroSection";
-import About from "../components/home/About";
+import Hero from "../components/home/Hero";
 import Features from "../components/home/Features";
-import Stats from "../components/home/HeroSection";
-import Timeline from "../components/home/TimelineSection";
-import CTA from "../components/home/CTASection";
+// import Tracks from "../components/common/Tracks";
+// import WorkflowSection from "../components/common/WorkflowSection";
+// import Stats from "../components/common/Stats";
+// import FAQ from "../components/common/FAQ";
+// import CTABanner from "../components/common/CTABanner";
+import SiteNav from "../components/common/SiteNav";
 
-
-function Home() {
+export default function Home() {
   return (
-    <>
-     <MainLayout>
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
 
-       <Hero />
-      <About />
+      <SiteNav />
+
+      <Hero />
+
       <Features />
+{/* 
+      <Tracks />
+
+      <WorkflowSection />
+
       <Stats />
-      <Timeline />
-      <CTA />
 
-    </MainLayout>
+      <FAQ />
 
-    </>
+      <CTABanner /> */}
+
+    </div>
   );
 }
-
-export default Home;
