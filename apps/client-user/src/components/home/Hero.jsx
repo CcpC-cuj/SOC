@@ -95,11 +95,12 @@ const Hero = () => {
           {/* BUTTONS */}
           <div className="flex flex-wrap gap-4">
             
-            <button
-              onClick={() => navigate("/register")}
-              className="gradient-button"
-            >
+            <button className="gradient-button">
               Join Now
+            </button>
+
+            <button className="secondary-button">
+              Explore Projects
             </button>
 
           </div>
