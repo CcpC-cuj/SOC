@@ -1,59 +1,70 @@
-import { motion } from "framer-motion";
+// CTASection.jsx
 
-const CTA = () => {
+const CTASection = () => {
   return (
-    <section className="pb-28">
-      <div className="container-main">
-        
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{
-            opacity: 1,
-            scale: 1,
-          }}
-          transition={{ duration: 0.7 }}
-          viewport={{ once: true }}
-          className="relative overflow-hidden bg-[var(--secondary)] rounded-[50px] px-10 md:px-20 py-20 text-white shadow-2xl"
-        >
-          
-          {/* Glow */}
-          <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/10 blur-3xl"></div>
-
-          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-16">
-            
-            {/* Left */}
-            <div className="max-w-2xl text-center lg:text-left">
-              
-              <h2 className="title-lg mb-7">
-                Ready to change your summer?
-              </h2>
-
-              <p className="text-xl leading-9 text-white/90">
-                Don't let another summer pass by without
-                building something that matters. Join the
-                SoC '26 cohort today.
-              </p>
-
+    <section className="px-6 py-28">
+      <div className="mx-auto max-w-6xl overflow-hidden rounded-[40px] border border-white/10 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-blue-500/10 p-16 backdrop-blur-xl">
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div>
+            <div className="mb-4 inline-flex rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300">
+              🚀 Join The Future of Collaboration
             </div>
 
-            {/* Buttons */}
-            <div className="flex flex-col sm:flex-row gap-5">
-              
-              <button className="bg-[var(--primary)] hover:scale-105 transition-all duration-300 text-white px-10 py-5 rounded-full font-semibold shadow-2xl">
-                Register Now
+            <h2 className="mb-6 text-5xl font-black leading-tight">
+              Ready to Build Something Amazing?
+            </h2>
+
+            <p className="mb-8 max-w-xl text-lg text-slate-300">
+              Become part of an innovative developer ecosystem where ideas
+              transform into impactful projects.
+            </p>
+
+            <div className="flex flex-wrap gap-4">
+              <button className="rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-4 text-lg font-bold transition hover:scale-105">
+                Join Seasons of Code
               </button>
 
-              <button className="border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all duration-300 px-10 py-5 rounded-full font-semibold">
-                View FAQ
+              <button className="rounded-2xl border border-white/20 bg-white/5 px-8 py-4 font-semibold backdrop-blur-lg transition hover:bg-white/10">
+                Explore Projects
               </button>
-
             </div>
           </div>
 
-        </motion.div>
+          <div className="grid gap-6">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+              <h3 className="mb-2 text-2xl font-bold text-cyan-400">
+                50+ Live Projects
+              </h3>
+
+              <p className="text-slate-400">
+                Work on exciting ideas with talented teams.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+              <h3 className="mb-2 text-2xl font-bold text-purple-400">
+                Real Team Collaboration
+              </h3>
+
+              <p className="text-slate-400">
+                Frontend, Backend, AI/ML, UI/UX, DevOps and more.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+              <h3 className="mb-2 text-2xl font-bold text-pink-400">
+                Mentorship & Growth
+              </h3>
+
+              <p className="text-slate-400">
+                Learn from experienced developers and mentors.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
 };
 
-export default CTA;
+export default CTASection;

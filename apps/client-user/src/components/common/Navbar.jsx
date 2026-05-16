@@ -1,73 +1,40 @@
-import { motion } from "framer-motion";
-import { HiCode } from "react-icons/hi";
-import { HiBars3BottomRight } from "react-icons/hi2";
+// Navbar.jsx
+
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   return (
-    <motion.nav
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      className="sticky top-4 z-50"
-    >
-      <div className="container-main">
-        <div className="glass rounded-full h-20 px-8 flex items-center justify-between card-shadow">
-          
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <HiCode className="text-4xl text-[var(--primary)]" />
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link to="/" className="text-2xl font-bold tracking-wide">
+          <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            SoC
+          </span>
+        </Link>
 
-            <h1 className="text-2xl font-extrabold text-[var(--primary)]">
-              Seasons of Code
-            </h1>
-          </div>
+        <nav className="hidden gap-8 md:flex">
+          <a href="#about" className="hover:text-cyan-400">
+            About
+          </a>
 
-          {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-10">
-            <a
-              href="#"
-              className="relative text-[var(--primary)] font-semibold"
-            >
-              Home
+          <a href="#features" className="hover:text-cyan-400">
+            Features
+          </a>
 
-              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[var(--secondary)]"></span>
-            </a>
+          <a href="#timeline" className="hover:text-cyan-400">
+            Timeline
+          </a>
 
-            <a
-              href="#"
-              className="text-[var(--text-light)] hover:text-[var(--primary)] transition"
-            >
-              Programs
-            </a>
+          <a href="#contact" className="hover:text-cyan-400">
+            Contact
+          </a>
+        </nav>
 
-            <a
-              href="#"
-              className="text-[var(--text-light)] hover:text-[var(--primary)] transition"
-            >
-              Timeline
-            </a>
-
-            <a
-              href="#"
-              className="text-[var(--text-light)] hover:text-[var(--primary)] transition"
-            >
-              FAQ
-            </a>
-          </div>
-
-          {/* Right */}
-          <div className="flex items-center gap-4">
-            <button className="primary-btn hidden md:block">
-              Join Now
-            </button>
-
-            <button className="lg:hidden text-4xl text-[var(--primary)]">
-              <HiBars3BottomRight />
-            </button>
-          </div>
-        </div>
+        <button className="rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 px-5 py-2 font-semibold transition hover:scale-105">
+          Join Now
+        </button>
       </div>
-    </motion.nav>
+    </header>
   );
 };
 

@@ -1,67 +1,31 @@
-import { motion } from "framer-motion";
+// StatsSection.jsx
 
 const stats = [
-  {
-    number: "250+",
-    label: "Active Projects",
-    color: "text-[#ffb8b2]",
-  },
-
-  {
-    number: "15k+",
-    label: "Git Commits",
-    color: "text-[#4cd7f8]",
-  },
-
-  {
-    number: "12",
-    label: "Focus Tracks",
-    color: "text-[#ffb8b2]",
-  },
-
-  {
-    number: "40+",
-    label: "Countries",
-    color: "text-[#4cd7f8]",
-  },
+  { number: "500+", label: "Students" },
+  { number: "50+", label: "Projects" },
+  { number: "20+", label: "Mentors" },
+  { number: "10k+", label: "Contributions" },
 ];
 
-const Stats = () => {
+const StatsSection = () => {
   return (
-    <section className="py-28 bg-[var(--primary)] text-white">
-      <div className="container-main">
-        
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-14 text-center">
-          
-          {stats.map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.7 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{
-                delay: index * 0.12,
-                duration: 0.5,
-              }}
-              viewport={{ once: true }}
-            >
-              
-              <h2
-                className={`text-6xl md:text-7xl font-extrabold mb-4 ${item.color}`}
-              >
-                {item.number}
-              </h2>
+    <section className="px-6 py-28">
+      <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-4">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center"
+          >
+            <h3 className="mb-2 text-5xl font-black text-cyan-400">
+              {stat.number}
+            </h3>
 
-              <p className="uppercase tracking-[4px] text-sm text-white/70 font-semibold">
-                {item.label}
-              </p>
-
-            </motion.div>
-          ))}
-
-        </div>
+            <p className="text-slate-400">{stat.label}</p>
+          </div>
+        ))}
       </div>
     </section>
   );
 };
 
-export default Stats;
+export default StatsSection;

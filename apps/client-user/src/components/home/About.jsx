@@ -1,107 +1,51 @@
-import { motion } from "framer-motion";
-
-import {
-  HiCheckCircle,
-} from "react-icons/hi2";
+// About.jsx
 
 const About = () => {
   return (
-    <section className="section-space bg-white/40 backdrop-blur-sm">
-      <div className="container-main">
-        
-        <div className="grid lg:grid-cols-2 gap-24 items-center">
+    <section id="about" className="px-6 py-28">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-16 text-center">
+          <h2 className="mb-4 text-4xl font-black">
+            What is Seasons of Code?
+          </h2>
 
-          {/* Left Image */}
-          <motion.div
-            initial={{ opacity: 0, x: -80 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
-            
-            <div className="overflow-hidden rounded-[40px] shadow-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop"
-                alt="team"
-                className="w-full h-full object-cover"
-              />
-            </div>
+          <p className="mx-auto max-w-2xl text-slate-400">
+            A year-round collaborative coding initiative for students and
+            developers.
+          </p>
+        </div>
 
-            {/* Floating Circle */}
-            <motion.div
-              animate={{ rotate: [12, 0, 12] }}
-              transition={{
-                repeat: Infinity,
-                duration: 6,
-              }}
-              className="hidden lg:flex absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-[var(--tertiary)] text-[var(--primary)] shadow-2xl items-center justify-center flex-col"
-            >
-              <h3 className="text-4xl font-extrabold">
-                100+
-              </h3>
+        <div className="grid gap-8 md:grid-cols-3">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+            <h3 className="mb-4 text-2xl font-bold text-cyan-400">
+              Learn Together
+            </h3>
 
-              <p className="font-semibold">
-                Mentors
-              </p>
-            </motion.div>
-
-          </motion.div>
-
-          {/* Right Content */}
-          <motion.div
-            initial={{ opacity: 0, x: 80 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-          >
-            
-            <span className="uppercase tracking-[4px] text-[var(--secondary)] font-bold mb-5 inline-block">
-              Our Mission
-            </span>
-
-            <h2 className="title-lg text-[var(--primary)] mb-8">
-              Bridging the gap between theory and production.
-            </h2>
-
-            <p className="text-lg leading-9 text-muted mb-8">
-              Seasons of Code is more than just a summer
-              program. It's an incubator for curiosity. We pair
-              ambitious students with mentors who have paved the
-              way in Open Source, Cloud Architecture, and
-              Product Design.
+            <p className="text-slate-300">
+              Collaborate with peers and mentors in real-world project
+              environments.
             </p>
+          </div>
 
-            <div className="space-y-5">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+            <h3 className="mb-4 text-2xl font-bold text-purple-400">
+              Build Projects
+            </h3>
 
-              <div className="flex items-center gap-4">
-                <HiCheckCircle className="text-3xl text-[var(--secondary)]" />
+            <p className="text-slate-300">
+              Work on impactful projects that improve your development skills.
+            </p>
+          </div>
 
-                <p className="text-lg">
-                  Peer-led learning environment
-                </p>
-              </div>
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+            <h3 className="mb-4 text-2xl font-bold text-pink-400">
+              Join Challenges
+            </h3>
 
-              <div className="flex items-center gap-4">
-                <HiCheckCircle className="text-3xl text-[var(--secondary)]" />
-
-                <p className="text-lg">
-                  Real-world repository contributions
-                </p>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <HiCheckCircle className="text-3xl text-[var(--secondary)]" />
-
-                <p className="text-lg">
-                  Global community of 5000+ alumni
-                </p>
-              </div>
-
-            </div>
-
-          </motion.div>
-
+            <p className="text-slate-300">
+              Participate in contests, hackathons, and innovation challenges.
+            </p>
+          </div>
         </div>
       </div>
     </section>

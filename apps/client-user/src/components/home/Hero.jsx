@@ -1,111 +1,54 @@
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+// Hero.jsx
 
-import NeuralBackground from "../common/NeuralBackground";
+import { motion } from "framer-motion";
 import FloatingBlobs from "./FloatingBlobs";
 import HeroDashboard from "./HeroDashboard";
 
-export default function Hero() {
+const Hero = () => {
   return (
-    <section className="relative isolate flex min-h-screen items-center pt-28">
-
-      <div className="absolute inset-0 bg-hero" />
-
-      <div className="absolute inset-0 grid-bg" />
-
-      <NeuralBackground className="opacity-70" />
-
+    <section className="relative flex min-h-screen items-center px-6 py-20">
       <FloatingBlobs />
 
-      <div className="mx-auto grid w-full max-w-7xl gap-12 px-6 lg:grid-cols-2 lg:items-center">
+      <div className="mx-auto grid max-w-7xl gap-16 lg:grid-cols-2 lg:items-center">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="mb-6 inline-flex rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300">
+            ⚡ Collaborative Developer Ecosystem
+          </div>
 
-        <div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-xs text-muted-foreground"
-          >
-
-            <span className="relative flex h-2 w-2">
-
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
-
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" />
-
-            </span>
-
-            Season 04 · Cohort applications open
-
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight"
-          >
-
+          <h1 className="mb-6 text-5xl font-black leading-tight md:text-7xl">
             Build.
             <br />
-
             Collaborate.
             <br />
-
-            <span className="text-gradient-aurora">
+            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-blue-500 bg-clip-text text-transparent">
               Innovate.
             </span>
+          </h1>
 
-          </motion.h1>
+          <p className="mb-8 max-w-xl text-lg text-slate-300">
+            Join Seasons of Code and work on real-world projects with
+            passionate developers, mentors, and innovators.
+          </p>
 
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-6 max-w-xl text-lg text-muted-foreground"
-          >
+          <div className="flex flex-wrap gap-4">
+            <button className="rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-4 font-bold transition hover:scale-105">
+              Join Now
+            </button>
 
-            A futuristic coding ecosystem where developers
-            build projects, collaborate with teams,
-            and grow together using AI-powered workflows.
-
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-8 flex flex-wrap gap-4"
-          >
-
-            <Link
-              to="/register"
-              className="group inline-flex items-center gap-2 rounded-xl bg-primary-gradient px-6 py-3 text-sm font-semibold text-white glow-violet hover:scale-105 transition"
-            >
-
-              Start Journey
-
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition" />
-
-            </Link>
-
-            <Link
-              to="/projects"
-              className="glass rounded-xl px-6 py-3 text-sm font-semibold hover:bg-white/10 transition"
-            >
+            <button className="rounded-2xl border border-white/20 bg-white/5 px-8 py-4 font-semibold backdrop-blur-lg transition hover:bg-white/10">
               Explore Projects
-            </Link>
-
-          </motion.div>
-
-        </div>
+            </button>
+          </div>
+        </motion.div>
 
         <HeroDashboard />
-
       </div>
-
     </section>
   );
-}
+};
+
+export default Hero;

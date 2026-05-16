@@ -1,32 +1,35 @@
+// Home.jsx
+
+import Navbar from "../components/common/Navbar";
+import Footer from "../components/common/Footer";
+import NeuralBackground from "../components/common/NeuralBackground";
+
 import Hero from "../components/home/Hero";
+import About from "../components/home/About";
 import Features from "../components/home/Features";
-// import Tracks from "../components/common/Tracks";
-// import WorkflowSection from "../components/common/WorkflowSection";
-// import Stats from "../components/common/Stats";
-// import FAQ from "../components/common/FAQ";
-// import CTABanner from "../components/common/CTABanner";
-import SiteNav from "../components/common/SiteNav";
+import StatsSection from "../components/home/StatsSection";
+// import TimelineSection from "../components/TimelineSection";
+// import CTASection from "../components/CTASection";
 
-export default function Home() {
+const Home = () => {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
+    <div className="relative min-h-screen overflow-hidden bg-[#050816] text-white">
+      <NeuralBackground />
 
-      <SiteNav />
+      <Navbar />
 
-      <Hero />
+      <main className="relative z-10">
+        <Hero />
+        <About />
+        <Features />
+        <StatsSection />
+        {/* <TimelineSection />
+        <CTASection /> */}
+      </main>
 
-      <Features />
-{/* 
-      <Tracks />
-
-      <WorkflowSection />
-
-      <Stats />
-
-      <FAQ />
-
-      <CTABanner /> */}
-
+      <Footer />
     </div>
   );
-}
+};
+
+export default Home;
