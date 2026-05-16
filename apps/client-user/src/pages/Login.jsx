@@ -5,8 +5,8 @@ import {
   Mail,
   Lock,
   ArrowRight,
-  Github,
 } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 
 const Login = () => {
   return (
@@ -173,7 +173,7 @@ const Login = () => {
               type="button"
               className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-8 py-4 font-semibold transition hover:bg-white/10"
             >
-              <Github size={22} />
+              <FaGithub  size={22} />
               Continue with GitHub
             </button>
 
