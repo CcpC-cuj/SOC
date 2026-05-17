@@ -1,5 +1,3 @@
-// src/models/User.js
-
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -20,13 +18,37 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    role: {
+      type: String,
+      enum: [
+        "admin",
+        "leader",
+        "user",
+      ],
+      default: "user",
+    },
+
     department: String,
 
     roll: String,
 
-    skill: String,
+    skills: [String],
 
     program: String,
+
+    joinedProjects: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Project",
+      },
+    ],
+
+    joinedTeams: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Team",
+      },
+    ],
   },
   {
     timestamps: true,

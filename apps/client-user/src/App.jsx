@@ -7,7 +7,7 @@ import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-// import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard";
 // import Profile from "./pages/Profile";
 
 const App = () => {
@@ -45,14 +45,14 @@ const App = () => {
       />
 
       {/* DASHBOARD */}
-      {/* <Route
+      <Route
         path="/dashboard"
         element={
           <MainLayout>
             <Dashboard />
           </MainLayout>
         }
-      /> */}
+      />
 
       {/* PROFILE */}
       {/* <Route
