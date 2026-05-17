@@ -7,17 +7,14 @@ import {
 
 import axios from "axios";
 
-const leaderRoles = [
-  "frontend-leader",
-  "backend-leader",
-  "ai-ml-leader",
-  "ui-ux-leader",
-];
-
 const Leaders = () => {
 
   const [projects,
     setProjects] =
+    useState([]);
+
+  const [teams,
+    setTeams] =
     useState([]);
 
   const [users,
@@ -28,17 +25,19 @@ const Leaders = () => {
     setSelectedProject] =
     useState("");
 
-  const [selectedUser,
-    setSelectedUser] =
+  const [selectedTeam,
+    setSelectedTeam] =
     useState("");
 
-  const [selectedRole,
-    setSelectedRole] =
+  const [selectedUser,
+    setSelectedUser] =
     useState("");
 
   useEffect(() => {
 
     fetchProjects();
+
+    fetchTeams();
 
     fetchUsers();
 
@@ -64,6 +63,34 @@ const Leaders = () => {
         console.log(error);
 
       }
+
+    };
+
+  // FETCH TEAMS
+  const fetchTeams =
+    async () => {
+
+      try {
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/api/teams"
+          );
+
+        console.log(
+          response.data
+        );
+
+        setTeams(
+          response.data
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
     };
 
   // FETCH USERS
@@ -97,6 +124,7 @@ const Leaders = () => {
         console.log(error);
 
       }
+
     };
 
   // ASSIGN LEADER
@@ -112,35 +140,55 @@ const Leaders = () => {
             "token"
           );
 
-        await axios.post(
-          "http://localhost:5000/api/project-members/assign-leader",
-          {
-            projectId:
-              selectedProject,
+        console.log({
 
-            userId:
+          teamId:
+            selectedTeam,
+
+          leaderId:
+            selectedUser,
+
+        });
+
+        await axios.put(
+
+          "http://localhost:5000/api/teams/assign-leader",
+
+          {
+
+            teamId:
+              selectedTeam,
+
+            leaderId:
               selectedUser,
 
-            role:
-              selectedRole,
           },
+
           {
             headers: {
               Authorization:
                 `Bearer ${token}`,
             },
           }
+
         );
 
         alert(
-          "Leader Assigned"
+          "Leader Assigned Successfully"
         );
 
       } catch (error) {
 
         console.log(error);
 
+        alert(
+          error.response?.data
+            ?.message ||
+            "Something went wrong"
+        );
+
       }
+
     };
 
   return (
@@ -204,8 +252,51 @@ const Leaders = () => {
                     }
 
                   </option>
+
                 )
               )
+            }
+
+          </select>
+
+          {/* TEAM */}
+          <select
+            value={
+              selectedTeam
+            }
+            onChange={(e) =>
+              setSelectedTeam(
+                e.target.value
+              )
+            }
+            className="rounded-2xl border border-white/10 bg-[#0b1120] px-5 py-4 outline-none"
+          >
+
+            <option value="">
+              Select Team
+            </option>
+
+            {
+              teams
+                .filter(
+                  (team) =>
+                    team.project?._id ===
+                    selectedProject
+                )
+                .map((team) => (
+
+                  <option
+                    key={team._id}
+                    value={
+                      team._id
+                    }
+                  >
+
+                    {team.name}
+
+                  </option>
+
+                ))
             }
 
           </select>
@@ -237,39 +328,7 @@ const Leaders = () => {
                     {user.name}
 
                   </option>
-                )
-              )
-            }
 
-          </select>
-
-          {/* ROLE */}
-          <select
-            value={selectedRole}
-            onChange={(e) =>
-              setSelectedRole(
-                e.target.value
-              )
-            }
-            className="rounded-2xl border border-white/10 bg-[#0b1120] px-5 py-4 outline-none"
-          >
-
-            <option value="">
-              Select Leader Role
-            </option>
-
-            {
-              leaderRoles.map(
-                (role) => (
-
-                  <option
-                    key={role}
-                    value={role}
-                  >
-
-                    {role}
-
-                  </option>
                 )
               )
             }
@@ -278,6 +337,7 @@ const Leaders = () => {
 
         </div>
 
+        {/* BUTTON */}
         <button
           type="submit"
           className="mt-8 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-4 font-bold"

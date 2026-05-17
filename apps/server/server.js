@@ -48,6 +48,12 @@ from "./src/routes/projectRoutes.js";
 import userRoutes
 from "./src/routes/userRoutes.js";
 
+import teamRoutes
+from "./src/routes/teamRoutes.js";
+
+import dashboardRoutes
+from "./src/routes/dashboardRoutes.js";
+
 import projectMemberRoutes
 from "./src/routes/projectMemberRoutes.js";
 dotenv.config();
@@ -67,6 +73,11 @@ app.use(
 );
 
 app.use(
+  "/api/dashboard",
+  dashboardRoutes
+);
+
+app.use(
   "/api/projects",
   projectRoutes
 );
@@ -74,6 +85,11 @@ app.use(
 app.use(
   "/api/project-members",
   projectMemberRoutes
+);
+
+app.use(
+  "/api/teams",
+  teamRoutes
 );
 
 app.use(
