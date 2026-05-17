@@ -14,7 +14,6 @@ const Home = () => {
     <>
       <Hero />
       <About />
-      
       <StatsSection />
       <TimelineSection />
       <CTASection />

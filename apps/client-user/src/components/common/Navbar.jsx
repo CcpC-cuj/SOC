@@ -26,8 +26,8 @@ const navLinks = [
     icon: LayoutDashboard,
   },
   {
-    name: "Programs",
-    path: "/programs",
+    name: "Projects",
+    path: "/projects",
     icon: FolderKanban,
   },
   {

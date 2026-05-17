@@ -1,16 +1,29 @@
 // App.jsx
 
-import { Routes, Route } from "react-router-dom";
+import {
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
-
+import AdminLayout from "./layouts/AdminLayout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-// import Profile from "./pages/Profile";
+import Projects from "./pages/Projects";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import AdminRoute from "./routes/AdminRoute";
+import ProjectDetails from "./pages/ProjectDetails";
+// ADMIN PAGES
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProjects from "./pages/admin/Projects";
+import Users from "./pages/admin/Users";
+import Tasks from "./pages/admin/Tasks";
+import Leaders from "./pages/admin/Leaders";
 
 const App = () => {
+
   return (
     <Routes>
 
@@ -44,25 +57,110 @@ const App = () => {
         }
       />
 
-      {/* DASHBOARD */}
+      {/* USER DASHBOARD */}
       <Route
         path="/dashboard"
         element={
+          <ProtectedRoute>
+
+            <MainLayout>
+              <Dashboard />
+            </MainLayout>
+
+          </ProtectedRoute>
+        }
+      />
+
+      {/* USER PROJECTS */}
+      <Route
+        path="/projects"
+        element={
           <MainLayout>
-            <Dashboard />
+            <Projects />
           </MainLayout>
         }
       />
 
-      {/* PROFILE */}
-      {/* <Route
-        path="/profile"
+      <Route
+        path="/projects/:id"
         element={
           <MainLayout>
-            <Profile />
+            <ProjectDetails />
           </MainLayout>
         }
-      /> */}
+      />
+
+      {/* ================= ADMIN ================= */}
+
+      {/* ADMIN DASHBOARD */}
+      <Route
+        path="/admin-dashboard"
+        element={
+          <AdminRoute>
+
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+
+          </AdminRoute>
+        }
+      />
+
+      {/* ADMIN PROJECTS */}
+      <Route
+        path="/admin-projects"
+        element={
+          <AdminRoute>
+
+            <AdminLayout>
+              <AdminProjects />
+            </AdminLayout>
+
+          </AdminRoute>
+        }
+      />
+
+      {/* ADMIN USERS */}
+      <Route
+        path="/admin-users"
+        element={
+          <AdminRoute>
+
+            <AdminLayout>
+              <Users />
+            </AdminLayout>
+
+          </AdminRoute>
+        }
+      />
+
+      {/* ADMIN TASKS */}
+      <Route
+        path="/admin-tasks"
+        element={
+          <AdminRoute>
+
+            <AdminLayout>
+              <Tasks />
+            </AdminLayout>
+
+          </AdminRoute>
+        }
+      />
+
+      {/* ADMIN LEADERS */}
+      <Route
+        path="/admin-leaders"
+        element={
+          <AdminRoute>
+
+            <AdminLayout>
+              <Leaders />
+            </AdminLayout>
+
+          </AdminRoute>
+        }
+      />
 
     </Routes>
   );

@@ -10,6 +10,10 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+import {
+  useLocation,
+} from "react-router-dom";
+
 import { FaGithub } from "react-icons/fa";
 
 import { useNavigate } from "react-router-dom";
@@ -19,7 +23,15 @@ from "../services/authService";
 
 const Login = () => {
 
-  const navigate = useNavigate();
+  const navigate =
+  useNavigate();
+
+const location =
+  useLocation();
+
+const from =
+  location.state?.from
+  || "/dashboard";
 
   const [formData, setFormData] =
     useState({
@@ -53,6 +65,8 @@ const Login = () => {
           formData
         );
 
+      console.log(data.user);
+
       localStorage.setItem(
         "token",
         data.token
@@ -63,8 +77,24 @@ const Login = () => {
         JSON.stringify(data.user)
       );
 
-      navigate("/dashboard");
+      if (
+          data.user.authority
+          === "admin"
+        ) {
 
+          navigate(
+            "/admin-dashboard"
+          );
+
+        }
+        else {
+
+          navigate(
+            "/dashboard"
+          );
+
+        }
+      
     } catch (error) {
 
       console.log(

@@ -1,3 +1,5 @@
+// src/models/Project.js
+
 import mongoose from "mongoose";
 
 const projectSchema =
@@ -13,32 +15,62 @@ const projectSchema =
         required: true,
       },
 
+      session: {
+        type: String,
+        required: true,
+      },
+
+      season: {
+        type: String,
+
+        enum: [
+          "Summer",
+          "Winter",
+        ],
+      },
+
+      domain: {
+        type: String,
+
+        enum: [
+          "Frontend",
+          "Backend",
+          "AI/ML",
+          "UI/UX",
+          "Cyber Security",
+        ],
+      },
+
       techStack: [String],
 
-      members: [
-        {
-          type:
-            mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-      ],
+      createdBy: {
+        type:
+          mongoose.Schema.Types.ObjectId,
 
-      teams: [
-        {
-          type:
-            mongoose.Schema.Types.ObjectId,
-          ref: "Team",
-        },
-      ],
+        ref: "User",
+      },
+
+      maxMembers: {
+        type: Number,
+        default: 10,
+      },
 
       status: {
         type: String,
+
         enum: [
-          "open",
+          "upcoming",
+          "active",
+          "completed",
           "closed",
         ],
-        default: "open",
+
+        default: "upcoming",
       },
+
+      startDate: Date,
+
+      endDate: Date,
     },
     {
       timestamps: true,
