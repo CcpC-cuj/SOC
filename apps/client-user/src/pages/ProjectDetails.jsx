@@ -124,20 +124,20 @@ const ProjectDetails = () => {
       );
 
         await axios.post(
-          "http://localhost:5000/api/project-members/join",
-          {
+        "http://localhost:5000/api/project-members/join",
+        {
             projectId:
-              project._id,
+            project._id,
 
-            role:
-              selectedRoles,
-          },
-          {
+            roles:
+            selectedRoles,
+        },
+        {
             headers: {
-              Authorization:
+            Authorization:
                 `Bearer ${token}`,
             },
-          }
+        }
         );
 
         alert(

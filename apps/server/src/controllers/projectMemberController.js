@@ -28,6 +28,14 @@ export const joinProject =
         roles,
       } = req.body;
 
+      console.log(roles);
+
+        console.log(
+        Array.isArray(
+            roles
+        )
+        );
+
       // CHECK PROJECT
       const project =
         await Project.findById(
@@ -53,6 +61,10 @@ export const joinProject =
             "Project is not active",
         });
       }
+
+      console.log(
+        allowedUserRoles
+    );
 
       // INVALID ROLE
         if (
@@ -167,6 +179,7 @@ export const assignLeader =
         "ai-ml-leader",
         "ui-ux-leader",
       ];
+
 
       // INVALID ROLE
       if (
