@@ -27,14 +27,21 @@ const Register = () => {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
+      github: "",
       skills: "",
       department: "",
       roll: "",
       program: "",
+      experienceLevel: "beginner",
     });
 
   const [loading, setLoading] =
     useState(false);
+
+    const [error,
+      setError] =
+      useState("");
 
   const handleChange = (e) => {
 
@@ -50,13 +57,58 @@ const Register = () => {
 
     e.preventDefault();
 
+    setError("");
+
+      // REQUIRED
+      if (
+        !formData.name
+        ||
+        !formData.email
+        ||
+        !formData.password
+      ) {
+
+        return setError(
+          "Please fill all required fields"
+        );
+      }
+
+      // PASSWORD LENGTH
+      if (
+        formData.password.length
+        < 6
+      ) {
+
+        return setError(
+          "Password must be at least 6 characters"
+        );
+      }
+
+      // PASSWORD MATCH
+      if (
+        formData.password
+        !==
+        formData.confirmPassword
+      ) {
+
+        return setError(
+          "Passwords do not match"
+        );
+      }
+
     try {
 
       setLoading(true);
 
-      const data =
-        await registerUser(
-          formData
+      const payload = {
+          ...formData,
+        };
+
+        delete payload.confirmPassword;
+
+        const data =
+          await registerUser(
+            payload
         );
 
       localStorage.setItem(
@@ -73,9 +125,10 @@ const Register = () => {
 
     } catch (error) {
 
-      console.log(
+      setError(
         error.response?.data
-          ?.message || error.message
+          ?.message
+        || "Registration failed"
       );
 
     } finally {
@@ -218,22 +271,50 @@ const Register = () => {
 
               </div>
 
+
+              {/* CONFIRM PASSWORD */}
+                <div>
+
+                  <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
+
+                    <Lock size={18} />
+
+                    Confirm Password
+
+                  </label>
+
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Confirm password"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
+                  />
+
+                </div>
+
               {/* GITHUB */}
-              <div>
+                <div>
 
-                <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
-                  <FaGithub size={18} />
-                  GitHub Profile
-                </label>
+                  <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
 
-                <input
-                  type="text"
-                  name="github"
-                  placeholder="GitHub username or link"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
-                />
+                    <FaGithub size={18} />
 
-              </div>
+                    GitHub Profile
+
+                  </label>
+
+                  <input
+                    type="url"
+                    name="github"
+                    value={formData.github}
+                    onChange={handleChange}
+                    placeholder="https://github.com/username"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
+                  />
+
+                </div>
 
               {/* SKILLS */}
               <div>
@@ -259,47 +340,60 @@ const Register = () => {
             {/* RIGHT SIDE */}
             <div className="space-y-10">
 
-              {/* EXPERIENCE */}
-              <div>
+             {/* EXPERIENCE */}
+                <div>
 
-                <label className="mb-5 flex items-center gap-3 text-xl font-bold">
-                  <Code2 size={22} />
-                  Experience Level
-                </label>
+                  <label className="mb-5 flex items-center gap-3 text-xl font-bold">
 
-                <div className="grid grid-cols-2 gap-4">
+                    <Code2 size={22} />
 
-                  <button
-                    type="button"
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-cyan-500/40 hover:bg-white/[0.05]"
-                  >
-                    Beginner
-                  </button>
+                    Experience Level
 
-                  <button
-                    type="button"
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-cyan-500/40 hover:bg-white/[0.05]"
-                  >
-                    Intermediate
-                  </button>
+                  </label>
 
-                  <button
-                    type="button"
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-cyan-500/40 hover:bg-white/[0.05]"
-                  >
-                    Advanced
-                  </button>
+                  <div className="grid grid-cols-2 gap-4">
 
-                  <button
-                    type="button"
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-cyan-500/40 hover:bg-white/[0.05]"
-                  >
-                    Open Source
-                  </button>
+                    {
+                      [
+                        "beginner",
+                        "intermediate",
+                        "advanced",
+                        "open-source",
+                      ].map((level) => (
+
+                        <button
+                          key={level}
+                          type="button"
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+
+                              experienceLevel:
+                                level,
+                            })
+                          }
+                          className={`rounded-2xl border px-5 py-4 capitalize transition ${
+                            formData.experienceLevel
+                            === level
+                              ? "border-cyan-500 bg-cyan-500/10 text-cyan-300"
+                              : "border-white/10 bg-white/[0.03] hover:border-cyan-500/40 hover:bg-white/[0.05]"
+                          }`}
+                        >
+
+                          {
+                            level.replace(
+                              "-",
+                              " "
+                            )
+                          }
+
+                        </button>
+                      ))
+                    }
+
+                  </div>
 
                 </div>
-
-              </div>
 
               {/* INFO BOX */}
               <div className="rounded-3xl border border-cyan-500/20 bg-cyan-500/5 p-6">
@@ -317,20 +411,26 @@ const Register = () => {
               </div>
 
               {/* SUBMIT BUTTON */}
-              <button
+              {
+                  error && (
+
+                    <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm text-red-300">
+
+                      {error}
+
+                    </div>
+                  )
+              }<button
                 type="submit"
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-5 text-lg font-bold transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(34,211,238,0.25)]"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-5 text-lg font-bold transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(34,211,238,0.25)] disabled:cursor-not-allowed disabled:opacity-50"
               >
-
                 {
                   loading
                     ? "Creating Account..."
                     : "Register Now"
                 }
-
                 <ArrowRight size={20} />
-
               </button>
 
             </div>

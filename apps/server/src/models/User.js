@@ -32,9 +32,23 @@ const userSchema =
         default: "user",
       },
 
+      experienceLevel: {
+        type: String,
+
+        enum: [
+          "beginner",
+          "intermediate",
+          "advanced",
+          "open-source",
+        ],
+
+        default:
+          "beginner",
+      },
+
       department: String,
 
-      // roll: String,
+      roll: String,
 
       skills: [String],
 

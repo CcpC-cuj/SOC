@@ -26,9 +26,8 @@ export const registerUser = async (
       email,
       password,
       department,
-      roll,
       skills,
-      program,
+      experienceLevel,
     } = req.body;
 
     const existingUser =
@@ -49,9 +48,8 @@ export const registerUser = async (
       email,
       password: hashedPassword,
       department,
-      roll,
       skills,
-      program,
+      experienceLevel,
     });
 
     user.password = undefined;

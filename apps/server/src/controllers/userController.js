@@ -5,6 +5,7 @@ from "../models/ProjectMember.js";
 import Task from "../models/Task.js";
 import Project from "../models/Project.js";
 
+
 // GET ALL USERS
 export const getUsers =
   async (req, res) => {
@@ -135,6 +136,10 @@ export const updateProfile =
       user.department =
         req.body.department
         || user.department;
+
+        user.experienceLevel =
+          req.body.experienceLevel
+          || user.experienceLevel;
 
       user.roll =
         req.body.roll

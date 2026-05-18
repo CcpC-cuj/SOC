@@ -30,6 +30,7 @@ const Profile = () => {
       github: "",
       linkedin: "",
       skills: "",
+      experienceLevel:"",
     });
 
   useEffect(() => {
@@ -84,6 +85,10 @@ const Profile = () => {
           linkedin:
             response.data.linkedin || "",
 
+            experienceLevel:
+                response.data
+                    .experienceLevel || "",
+
           skills:
             response.data.skills
               ?.join(", ")
@@ -115,9 +120,14 @@ const Profile = () => {
           {
             ...form,
 
-            skills:
-              form.skills
-                .split(","),
+            sskills:
+                form.skills
+                    .split(",")
+                    .map(
+                    (skill) =>
+                        skill.trim()
+                    )
+                    .filter(Boolean),
 
           },
           {
@@ -216,13 +226,26 @@ const Profile = () => {
 
               </p>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-500">
 
-                {
-                  profile.roll
-                }
+                    Roll No:
+                    {" "}
+                    {
+                        profile.roll
+                    }
 
-              </p>
+                </p>
+
+            <div className="mt-5">
+                <span className="rounded-full bg-purple-500/10 px-5 py-3 text-sm font-semibold capitalize text-purple-300">
+
+                    {
+                    profile.experienceLevel
+                    }
+
+                </span>
+
+                </div>
 
               <div className="mt-8 flex w-full flex-col gap-4">
 
@@ -376,6 +399,56 @@ const Profile = () => {
                         className="rounded-2xl border border-white/10 bg-[#050816] px-5 py-4 outline-none"
                       />
 
+                    </div>
+
+                    <div>
+                        <label className="mb-3 block text-sm font-semibold text-slate-300">
+
+                            Experience Level
+
+                        </label>
+
+                        <div className="grid grid-cols-2 gap-4">
+
+                            {
+                            [
+                                "beginner",
+                                "intermediate",
+                                "advanced",
+                                "open-source",
+                            ].map((level) => (
+
+                                <button
+                                key={level}
+                                type="button"
+                                onClick={() =>
+                                    setForm({
+                                    ...form,
+
+                                    experienceLevel:
+                                        level,
+                                    })
+                                }
+                                className={`rounded-2xl border px-5 py-4 capitalize transition ${
+                                    form.experienceLevel
+                                    === level
+                                    ? "border-cyan-500 bg-cyan-500/10 text-cyan-300"
+                                    : "border-white/10 bg-[#050816]"
+                                }`}
+                                >
+
+                                {
+                                    level.replace(
+                                    "-",
+                                    " "
+                                    )
+                                }
+
+                                </button>
+                            ))
+                            }
+
+                        </div>
                     </div>
 
                     <input
