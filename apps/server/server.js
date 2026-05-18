@@ -39,23 +39,16 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import connectDB
-from "./src/config/db.js";
-import authRoutes
-from "./src/routes/authRoutes.js";
-import projectRoutes
-from "./src/routes/projectRoutes.js";
-import userRoutes
-from "./src/routes/userRoutes.js";
+import connectDB from "./src/config/db.js";
+import authRoutes from "./src/routes/authRoutes.js";
+import projectRoutes from "./src/routes/projectRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
+import teamRoutes from "./src/routes/teamRoutes.js";
+import dashboardRoutes from "./src/routes/dashboardRoutes.js";
+import taskRoutes from "./src/routes/taskRoutes.js";
+import projectMemberRoutes from "./src/routes/projectMemberRoutes.js";
+import projectSubmissionRoutes from "./src/routes/projectSubmissionRoutes.js";
 
-import teamRoutes
-from "./src/routes/teamRoutes.js";
-
-import dashboardRoutes
-from "./src/routes/dashboardRoutes.js";
-
-import projectMemberRoutes
-from "./src/routes/projectMemberRoutes.js";
 dotenv.config();
 
 connectDB();
@@ -93,8 +86,18 @@ app.use(
 );
 
 app.use(
+  "/api/tasks",
+  taskRoutes
+);
+
+app.use(
   "/api/users",
   userRoutes
+);
+
+app.use(
+  "/api/project-submissions",
+  projectSubmissionRoutes
 );
 
 const PORT =

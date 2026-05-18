@@ -12,6 +12,10 @@ import {
   Clock3,
 } from "lucide-react";
 
+import {
+  Link,
+} from "react-router-dom";
+
 const Dashboard = () => {
 
   const [dashboard,
@@ -191,132 +195,112 @@ const Dashboard = () => {
       </div>
 
       {/* PROJECTS */}
-      <div className="mb-12">
+        <div className="mb-12">
 
-        <h2 className="mb-6 text-3xl font-black">
-          My Projects
-        </h2>
+          <h2 className="mb-6 text-3xl font-black">
 
-        <div className="grid gap-6 lg:grid-cols-2">
+            My Projects
 
-          {
-            dashboard.memberships.map(
-              (member) => (
+          </h2>
 
-                <div
-                  key={member._id}
-                  className="rounded-3xl border border-white/10 bg-white/5 p-6"
-                >
+          <div className="grid gap-6 lg:grid-cols-2">
 
-                  <h3 className="mb-3 text-2xl font-bold">
+            {
+              dashboard.memberships.map(
+                (member) => (
 
-                    {
-                      member.project
-                        ?.title
-                    }
+                  <Link
+                    to={`/workspace/${member.project?._id}`}
+                    key={member._id}
+                    className="rounded-3xl border border-white/10 bg-white/5 p-6 transition hover:border-cyan-500/30 hover:bg-white/10"
+                  >
 
-                  </h3>
+                    {/* TOP */}
+                    <div className="mb-5 flex items-start justify-between">
 
-                  <p className="mb-4 text-slate-400">
+                      <div>
 
-                    Role:
-                    {" "}
+                        <h3 className="text-3xl font-black">
 
-                    {
-                      member.role
-                    }
+                          {
+                            member.project
+                              ?.title
+                          }
 
-                  </p>
+                        </h3>
 
-                  <span className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300">
+                        <p className="mt-3 text-slate-400">
 
-                    {
-                      member.status
-                    }
+                          {
+                            member.project
+                              ?.description
+                          }
 
-                  </span>
+                        </p>
 
-                </div>
-              )
-            )
-          }
+                      </div>
 
-        </div>
+                      {
+                        member.isLeader && (
 
-      </div>
+                          <div className="rounded-full bg-green-500/10 px-4 py-2 text-sm text-green-300">
 
-      {/* TASKS */}
-      <div>
+                            Leader
 
-        <h2 className="mb-6 text-3xl font-black">
-          Recent Tasks
-        </h2>
-
-        <div className="space-y-5">
-
-          {
-            dashboard.tasks.map(
-              (task) => (
-
-                <div
-                  key={task._id}
-                  className="rounded-3xl border border-white/10 bg-white/5 p-6"
-                >
-
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-                    <div>
-
-                      <h3 className="text-xl font-bold">
-
-                        {
-                          task.title
-                        }
-
-                      </h3>
-
-                      <p className="mt-2 text-slate-400">
-
-                        {
-                          task.description
-                        }
-
-                      </p>
+                          </div>
+                        )
+                      }
 
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
+                    {/* ROLES */}
+                    <div className="mb-5 flex flex-wrap gap-3">
+
+                      {
+                        member.roles?.map(
+                          (role) => (
+
+                            <span
+                              key={role}
+                              className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300"
+                            >
+
+                              {role}
+
+                            </span>
+                          )
+                        )
+                      }
+
+                    </div>
+
+                    {/* STATUS */}
+                    <div className="flex items-center justify-between">
 
                       <span className="rounded-full bg-purple-500/10 px-4 py-2 text-sm text-purple-300">
 
                         {
-                          task.project
-                            ?.title
+                          member.project
+                            ?.status
                         }
 
                       </span>
 
-                      <span className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300">
+                      <span className="text-sm text-slate-400">
 
-                        {
-                          task.status
-                        }
+                        Open Workspace →
 
                       </span>
 
                     </div>
 
-                  </div>
-
-                </div>
+                  </Link>
+                )
               )
-            )
-          }
+            }
 
+          </div>
         </div>
-
-      </div>
-
     </div>
   );
 };

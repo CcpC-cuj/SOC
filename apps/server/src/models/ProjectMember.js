@@ -28,13 +28,6 @@ const projectMemberSchema =
           type: String,
 
           enum: [
-
-            // ADMIN ASSIGNED ONLY
-            "frontend-leader",
-            "backend-leader",
-            "ai-ml-leader",
-            "ui-ux-leader",
-
             // USER SELECTABLE
             "frontend-developer",
             "backend-developer",
@@ -43,6 +36,11 @@ const projectMemberSchema =
           ],
         },
       ],
+
+      isLeader: {
+        type: Boolean,
+        default: false,
+      },
 
       status: {
         type: String,

@@ -4,6 +4,9 @@ from "express";
 import {
   getUsers,
   deleteUser,
+  getMyProfile,
+  updateProfile,
+  getProfileDashboard
 } from "../controllers/userController.js";
 
 import {
@@ -28,6 +31,24 @@ router.delete(
   protect,
   adminOnly,
   deleteUser
+);
+
+router.get(
+  "/profile",
+  protect,
+  getMyProfile
+);
+
+router.put(
+  "/profile",
+  protect,
+  updateProfile
+);
+
+router.get(
+  "/profile/dashboard",
+  protect,
+  getProfileDashboard
 );
 
 export default router;

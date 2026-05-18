@@ -13,6 +13,10 @@ import {
   Pencil
 } from "lucide-react";
 
+import {
+  Link,
+} from "react-router-dom";
+
 const Projects = () => {
 
   const [projects,
@@ -36,9 +40,14 @@ const [formData,
     status: "upcoming",
   });
 
+  const [dashboard,
+  setDashboard] =
+  useState(null);
+
   useEffect(() => {
 
     fetchProjects();
+    fetchDashboard();
 
   }, []);
 
@@ -223,6 +232,39 @@ const updateProject =
 
       }
     };
+
+
+    const fetchDashboard =
+  async () => {
+
+    try {
+
+      const token =
+        localStorage.getItem(
+          "token"
+        );
+
+      const response =
+        await axios.get(
+          "http://localhost:5000/api/users/profile/dashboard",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+      setDashboard(
+        response.data
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+};
 
   return (
     <div>
@@ -492,6 +534,15 @@ const updateProject =
                   <Pencil size={20} />
 
                 </button>
+
+                <Link
+                  to={`/admin/projects/${project._id}`}
+                  className="mt-5 inline-block rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-6 py-3 font-bold"
+                >
+
+                  Manage Project
+
+                </Link>
 
               </div>
 

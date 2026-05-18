@@ -1,5 +1,3 @@
-// src/routes/projectMemberRoutes.js
-
 import express from "express";
 
 import {
@@ -13,26 +11,24 @@ import {
   adminOnly,
 } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
+const router =
+  express.Router();
 
-// ================= USER JOIN PROJECT =================
-
+// JOIN PROJECT
 router.post(
   "/join",
   protect,
   joinProject
 );
 
-// ================= GET PROJECT MEMBERS =================
-
+// GET MEMBERS
 router.get(
   "/:projectId",
   protect,
   getProjectMembers
 );
 
-// ================= ADMIN ASSIGN LEADER =================
-
+// ASSIGN LEADER
 router.post(
   "/assign-leader",
   protect,

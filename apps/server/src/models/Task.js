@@ -16,7 +16,7 @@ const taskSchema =
         required: true,
       },
 
-      assignedBy: {
+      createdBy: {
         type:
           mongoose.Schema.Types.ObjectId,
 
@@ -50,16 +50,19 @@ const taskSchema =
         ref: "Team",
       },
 
-      priority: {
+      taskType: {
         type: String,
 
         enum: [
-          "low",
-          "medium",
-          "high",
+          "feature",
+          "bug-fix",
+          "research",
+          "design",
+          "documentation",
+          "testing",
         ],
 
-        default: "medium",
+        default: "feature",
       },
 
       deadline: {

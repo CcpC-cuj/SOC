@@ -1,11 +1,10 @@
-// client-admin/src/pages/Leaders.jsx
-
 import {
   useEffect,
   useState,
 } from "react";
 
-import axios from "axios";
+import axios
+from "axios";
 
 const Leaders = () => {
 
@@ -13,33 +12,17 @@ const Leaders = () => {
     setProjects] =
     useState([]);
 
-  const [teams,
-    setTeams] =
-    useState([]);
-
-  const [users,
-    setUsers] =
+  const [members,
+    setMembers] =
     useState([]);
 
   const [selectedProject,
     setSelectedProject] =
     useState("");
 
-  const [selectedTeam,
-    setSelectedTeam] =
-    useState("");
-
-  const [selectedUser,
-    setSelectedUser] =
-    useState("");
-
   useEffect(() => {
 
     fetchProjects();
-
-    fetchTeams();
-
-    fetchUsers();
 
   }, []);
 
@@ -63,41 +46,17 @@ const Leaders = () => {
         console.log(error);
 
       }
-
     };
 
-  // FETCH TEAMS
-  const fetchTeams =
-    async () => {
+  // FETCH MEMBERS
+  const fetchMembers =
+    async (projectId) => {
 
       try {
 
-        const response =
-          await axios.get(
-            "http://localhost:5000/api/teams"
-          );
-
-        console.log(
-          response.data
+        setSelectedProject(
+          projectId
         );
-
-        setTeams(
-          response.data
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-
-    };
-
-  // FETCH USERS
-  const fetchUsers =
-    async () => {
-
-      try {
 
         const token =
           localStorage.getItem(
@@ -106,7 +65,7 @@ const Leaders = () => {
 
         const response =
           await axios.get(
-            "http://localhost:5000/api/users",
+            `http://localhost:5000/api/project-members/${projectId}`,
             {
               headers: {
                 Authorization:
@@ -115,7 +74,7 @@ const Leaders = () => {
             }
           );
 
-        setUsers(
+        setMembers(
           response.data
         );
 
@@ -124,14 +83,11 @@ const Leaders = () => {
         console.log(error);
 
       }
-
     };
 
   // ASSIGN LEADER
   const assignLeader =
-    async (e) => {
-
-      e.preventDefault();
+    async (userId) => {
 
       try {
 
@@ -140,55 +96,34 @@ const Leaders = () => {
             "token"
           );
 
-        console.log({
-
-          teamId:
-            selectedTeam,
-
-          leaderId:
-            selectedUser,
-
-        });
-
-        await axios.put(
-
-          "http://localhost:5000/api/teams/assign-leader",
-
+        await axios.post(
+          "http://localhost:5000/api/project-members/assign-leader",
           {
+            projectId:
+              selectedProject,
 
-            teamId:
-              selectedTeam,
-
-            leaderId:
-              selectedUser,
-
+            userId,
           },
-
           {
             headers: {
               Authorization:
                 `Bearer ${token}`,
             },
           }
-
         );
 
-        alert(
-          "Leader Assigned Successfully"
+        fetchMembers(
+          selectedProject
         );
 
       } catch (error) {
 
-        console.log(error);
-
-        alert(
+        console.log(
           error.response?.data
-            ?.message ||
-            "Something went wrong"
+          || error.message
         );
 
       }
-
     };
 
   return (
@@ -199,155 +134,142 @@ const Leaders = () => {
 
         <h1 className="text-5xl font-black">
 
-          Leader Management
+          Team Leaders
 
         </h1>
 
         <p className="mt-3 text-slate-400">
 
-          Assign team leaders for projects
+          Assign one leader per project
 
         </p>
 
       </div>
 
-      {/* FORM */}
-      <form
-        onSubmit={assignLeader}
-        className="rounded-3xl border border-white/10 bg-white/5 p-8"
-      >
+      {/* PROJECTS */}
+      <div className="mb-10 flex flex-wrap gap-4">
 
-        <div className="grid gap-6 md:grid-cols-3">
+        {
+          projects.map(
+            (project) => (
 
-          {/* PROJECT */}
-          <select
-            value={
-              selectedProject
-            }
-            onChange={(e) =>
-              setSelectedProject(
-                e.target.value
-              )
-            }
-            className="rounded-2xl border border-white/10 bg-[#0b1120] px-5 py-4 outline-none"
-          >
+              <button
+                key={project._id}
+                onClick={() =>
+                  fetchMembers(
+                    project._id
+                  )
+                }
+                className={`rounded-2xl px-6 py-4 font-medium transition ${
+                  selectedProject
+                  === project._id
+                    ? "bg-gradient-to-r from-cyan-500 to-purple-600 text-white"
+                    : "bg-white/5 text-slate-300"
+                }`}
+              >
 
-            <option value="">
-              Select Project
-            </option>
+                {project.title}
 
-            {
-              projects.map(
-                (project) => (
+              </button>
+            )
+          )
+        }
 
-                  <option
-                    key={project._id}
-                    value={
-                      project._id
-                    }
-                  >
+      </div>
+
+      {/* MEMBERS */}
+      <div className="grid gap-6 lg:grid-cols-2">
+
+        {
+          members.map(
+            (member) => (
+
+              <div
+                key={member._id}
+                className="rounded-3xl border border-white/10 bg-white/5 p-7"
+              >
+
+                {/* USER */}
+                <div>
+
+                  <h2 className="text-3xl font-black">
 
                     {
-                      project.title
+                      member.user
+                        ?.name
                     }
 
-                  </option>
+                  </h2>
 
-                )
-              )
-            }
+                  <p className="mt-2 text-slate-400">
 
-          </select>
-
-          {/* TEAM */}
-          <select
-            value={
-              selectedTeam
-            }
-            onChange={(e) =>
-              setSelectedTeam(
-                e.target.value
-              )
-            }
-            className="rounded-2xl border border-white/10 bg-[#0b1120] px-5 py-4 outline-none"
-          >
-
-            <option value="">
-              Select Team
-            </option>
-
-            {
-              teams
-                .filter(
-                  (team) =>
-                    team.project?._id ===
-                    selectedProject
-                )
-                .map((team) => (
-
-                  <option
-                    key={team._id}
-                    value={
-                      team._id
+                    {
+                      member.user
+                        ?.email
                     }
-                  >
 
-                    {team.name}
+                  </p>
 
-                  </option>
+                </div>
 
-                ))
-            }
+                {/* ROLES */}
+                <div className="mt-5 flex flex-wrap gap-3">
 
-          </select>
+                  {
+                    member.roles?.map(
+                      (role) => (
 
-          {/* USER */}
-          <select
-            value={selectedUser}
-            onChange={(e) =>
-              setSelectedUser(
-                e.target.value
-              )
-            }
-            className="rounded-2xl border border-white/10 bg-[#0b1120] px-5 py-4 outline-none"
-          >
+                        <span
+                          key={role}
+                          className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300"
+                        >
 
-            <option value="">
-              Select User
-            </option>
+                          {role}
 
-            {
-              users.map(
-                (user) => (
+                        </span>
+                      )
+                    )
+                  }
 
-                  <option
-                    key={user._id}
-                    value={user._id}
-                  >
+                </div>
 
-                    {user.name}
+                {/* LEADER */}
+                <div className="mt-6">
 
-                  </option>
+                  {
+                    member.isLeader ? (
 
-                )
-              )
-            }
+                      <div className="rounded-2xl bg-green-500/10 px-5 py-4 text-center font-bold text-green-300">
 
-          </select>
+                        Team Leader
 
-        </div>
+                      </div>
 
-        {/* BUTTON */}
-        <button
-          type="submit"
-          className="mt-8 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-4 font-bold"
-        >
+                    ) : (
 
-          Assign Leader
+                      <button
+                        onClick={() =>
+                          assignLeader(
+                            member.user._id
+                          )
+                        }
+                        className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-6 py-4 font-bold"
+                      >
 
-        </button>
+                        Assign Leader
 
-      </form>
+                      </button>
+                    )
+                  }
+
+                </div>
+
+              </div>
+            )
+          )
+        }
+
+      </div>
 
     </div>
   );

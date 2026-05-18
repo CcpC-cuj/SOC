@@ -42,6 +42,10 @@ const ProjectDetails = () => {
     setProject] =
     useState(null);
 
+  const [members,
+      setMembers] =
+      useState([]);
+
   const [showModal,
     setShowModal] =
     useState(false);
@@ -53,6 +57,7 @@ const ProjectDetails = () => {
   useEffect(() => {
 
     fetchProject();
+    fetchMembers();
 
   }, []);
 
@@ -106,6 +111,39 @@ const ProjectDetails = () => {
       }
 
       setShowModal(true);
+    };
+
+// fetch Members
+    const fetchMembers =
+      async () => {
+
+        try {
+
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+          const response =
+            await axios.get(
+              `http://localhost:5000/api/project-members/${id}`,
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+          setMembers(
+            response.data
+          );
+
+        } catch (error) {
+
+          console.log(error);
+
+        }
     };
 
   // JOIN PROJECT
@@ -306,6 +344,94 @@ const ProjectDetails = () => {
         </div>
 
       </div>
+
+      {/* TEAM */}
+        <div className="mb-12">
+
+          <h2 className="mb-6 text-3xl font-black">
+
+            Team Members
+
+          </h2>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+
+            {
+              members.map(
+                (member) => (
+
+                  <div
+                    key={member._id}
+                    className="rounded-3xl border border-white/10 bg-white/5 p-6"
+                  >
+
+                    {/* NAME */}
+                    <div className="mb-4 flex items-center justify-between">
+
+                      <div>
+
+                        <h3 className="text-2xl font-bold">
+
+                          {
+                            member.user
+                              ?.name
+                          }
+
+                        </h3>
+
+                        <p className="mt-1 text-slate-400">
+
+                          {
+                            member.user
+                              ?.email
+                          }
+
+                        </p>
+
+                      </div>
+
+                      {
+                        member.isLeader && (
+
+                          <div className="rounded-full bg-green-500/10 px-4 py-2 text-sm text-green-300">
+
+                            Team Leader
+
+                          </div>
+                        )
+                      }
+
+                    </div>
+
+                    {/* ROLES */}
+                    <div className="flex flex-wrap gap-3">
+
+                      {
+                        member.roles?.map(
+                          (role) => (
+
+                            <span
+                              key={role}
+                              className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300"
+                            >
+
+                              {role}
+
+                            </span>
+                          )
+                        )
+                      }
+
+                    </div>
+
+                  </div>
+                )
+              )
+            }
+
+          </div>
+
+        </div>
 
       {/* JOIN BUTTON */}
       {

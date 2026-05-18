@@ -160,8 +160,8 @@ export const getProjectMembers =
     }
 };
 
-// ================= ASSIGN LEADER =================
 
+// ASSIGN TEAM LEADER
 export const assignLeader =
   async (req, res) => {
 
@@ -170,70 +170,39 @@ export const assignLeader =
       const {
         projectId,
         userId,
-        roles,
       } = req.body;
 
-      const allowedLeaderRoles = [
-        "frontend-leader",
-        "backend-leader",
-        "ai-ml-leader",
-        "ui-ux-leader",
-      ];
+      // REMOVE OLD LEADER
+      await ProjectMember.updateMany(
+        {
+          project: projectId,
+        },
+        {
+          isLeader: false,
+        }
+      );
 
-
-      // INVALID ROLE
-      if (
-        !Array.isArray(
-          roles
-        )
-        ||
-        roles.length === 0
-        ||
-        !roles.every(
-          (role) =>
-            allowedLeaderRoles.includes(
-              role
-            )
-        )
-      )  {
-
-        return res.status(400).json({
-          message:
-            "Invalid leader role",
-        });
-      }
-
-      // CHECK EXISTING MEMBER
-      let member =
+      // FIND MEMBER
+      const member =
         await ProjectMember.findOne({
           project: projectId,
 
           user: userId,
         });
 
-      // UPDATE EXISTING
-      if (member) {
+      if (!member) {
 
-        member.roles = roles;
-
-        await member.save();
-
-      }
-
-      // CREATE NEW
-      else {
-
-        member =
-          await ProjectMember.create({
-            project:
-              projectId,
-
-            user:
-              userId,
-
-            roles,
+        return res.status(404)
+          .json({
+            message:
+              "Member not found",
           });
       }
+
+      // ASSIGN LEADER
+      member.isLeader = true;
+
+      await member.save();
 
       res.json({
         message:

@@ -122,3 +122,40 @@ export const loginUser = async (
 
   }
 };
+
+
+// VERIFY TOKEN
+export const verifyToken =
+  async (req, res) => {
+
+    try {
+
+      const user =
+        await User.findById(
+          req.user._id
+        ).select("-password");
+
+      if (!user) {
+
+        return res.status(401)
+          .json({
+            message:
+              "Invalid user",
+          });
+      }
+
+      res.json({
+        valid: true,
+        user,
+      });
+
+    } catch (error) {
+
+      res.status(401)
+        .json({
+          message:
+            "Unauthorized",
+        });
+
+    }
+};

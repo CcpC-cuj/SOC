@@ -1,3 +1,4 @@
+// services/authService.js
 import API from "./api";
 
 // REGISTER
