@@ -168,12 +168,12 @@ const limiter = rateLimit({
 app.use(limiter);
 
 
-// CORS
+
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "http://localhost:5174",
+      process.env.USER_CLIENT_URL,
     ],
 
     credentials: true,
