@@ -1,3 +1,4 @@
+// Workspace.jsx
 import {
   useEffect,
   useState,
@@ -7,8 +8,7 @@ import {
   useParams,
 } from "react-router-dom";
 
-import axios
-from "axios";
+import API from "../services/api";
 
 const Workspace = () => {
 
@@ -66,221 +66,169 @@ const Workspace = () => {
 
   }, []);
 
-  // PROJECT
-  const fetchProject =
-    async () => {
-
-      try {
-
-        const response =
-          await axios.get(
-            `http://localhost:5000/api/projects/${id}`
-          );
-
-        setProject(
-          response.data
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-    };
-
-  // MEMBERS
-  const fetchMembers =
-    async () => {
-
-      try {
-
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const response =
-          await axios.get(
-            `http://localhost:5000/api/project-members/${id}`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setMembers(
-          response.data
-        );
-
-        const user =
-        JSON.parse(
-            localStorage.getItem(
-            "user"
-            )
-        );
-
-        const leader =
-        response.data.find(
-            (member) =>
-            member.user._id
-            === user._id
-            &&
-            member.isLeader
-        );
-
-        if (leader) {
-
-        setIsLeader(true);
-        }
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-    };
-
-// create Task
-    const createTask =
-        async (e) => {
-
-            e.preventDefault();
-
-            try {
-
-            const token =
-                localStorage.getItem(
-                "token"
-                );
-
-            await axios.post(
-                "http://localhost:5000/api/tasks",
-                {
-                ...taskForm,
-
-                projectId: id,
-                },
-                {
-                headers: {
-                    Authorization:
-                    `Bearer ${token}`,
-                },
-                }
-            );
-
-            setTaskForm({
-                title: "",
-                description: "",
-                assignedTo: "",
-                taskType: "feature",
-                deadline: "",
-            });
-
-            fetchTasks();
-
-            } catch (error) {
-
-            console.log(
-                error.response?.data
-            );
-
-            }
-        };
-
-
-  // TASKS
-  const fetchTasks =
-    async () => {
-
-      try {
-
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const response =
-          await axios.get(
-            `http://localhost:5000/api/tasks/project/${id}`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setTasks(
-          response.data
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-    };
-
-  // UPDATE TASK STATUS
-  const updateTaskStatus =
-    async (
-      taskId,
-      status,
-      submissionLink = ""
-    ) => {
-
-      try {
-
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        await axios.put(
-          `http://localhost:5000/api/tasks/${taskId}/status`,
-          {
-            status,
-            submissionLink,
-          },
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
-
-        fetchTasks();
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-    };
-
-
-    const fetchSubmission =
+// PROJECT
+const fetchProject =
   async () => {
 
     try {
 
-      const token =
-        localStorage.getItem(
-          "token"
+      const response =
+        await API.get(
+          `/projects/${id}`
         );
 
+      setProject(
+        response.data
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+};
+
+
+// MEMBERS
+const fetchMembers =
+  async () => {
+
+    try {
+
       const response =
-        await axios.get(
-          `http://localhost:5000/api/project-submissions/${id}`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
+        await API.get(
+          `/project-members/${id}`
+        );
+
+      setMembers(
+        response.data
+      );
+
+      const user =
+        JSON.parse(
+          localStorage.getItem(
+            "user"
+          )
+        );
+
+      const leader =
+        response.data.find(
+          (member) =>
+            member.user._id ===
+            user._id &&
+            member.isLeader
+        );
+
+      if (leader) {
+
+        setIsLeader(true);
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+};
+
+
+// CREATE TASK
+const createTask =
+  async (e) => {
+
+    e.preventDefault();
+
+    try {
+
+      await API.post(
+        "/tasks",
+        {
+          ...taskForm,
+
+          projectId: id,
+        }
+      );
+
+      setTaskForm({
+        title: "",
+        description: "",
+        assignedTo: "",
+        taskType: "feature",
+        deadline: "",
+      });
+
+      fetchTasks();
+
+    } catch (error) {
+
+      console.log(
+        error.response?.data
+      );
+
+    }
+};
+
+
+// TASKS
+const fetchTasks =
+  async () => {
+
+    try {
+
+      const response =
+        await API.get(
+          `/tasks/project/${id}`
+        );
+
+      setTasks(
+        response.data
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+};
+
+
+// UPDATE TASK STATUS
+const updateTaskStatus =
+  async (
+    taskId,
+    status,
+    submissionLink = ""
+  ) => {
+
+    try {
+
+      await API.put(
+        `/tasks/${taskId}/status`,
+        {
+          status,
+          submissionLink,
+        }
+      );
+
+      fetchTasks();
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+};
+
+
+// FETCH SUBMISSION
+const fetchSubmission =
+  async () => {
+
+    try {
+
+      const response =
+        await API.get(
+          `/project-submissions/${id}`
         );
 
       if (response.data) {
@@ -311,6 +259,7 @@ const Workspace = () => {
 };
 
 
+// SUBMIT PROJECT
 const submitProject =
   async (e) => {
 
@@ -318,23 +267,12 @@ const submitProject =
 
     try {
 
-      const token =
-        localStorage.getItem(
-          "token"
-        );
-
-      await axios.post(
-        "http://localhost:5000/api/project-submissions",
+      await API.post(
+        "/project-submissions",
         {
           projectId: id,
 
           ...submission,
-        },
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
         }
       );
 

@@ -1,11 +1,10 @@
-// client-admin/src/pages/Users.jsx
-
+// 
 import {
   useEffect,
   useState,
 } from "react";
 
-import axios from "axios";
+import API from "../../services/api";
 
 import {
   Trash2,
@@ -26,67 +25,45 @@ const Users = () => {
   }, []);
 
   // FETCH USERS
-  const fetchUsers =
-    async () => {
+const fetchUsers =
+  async () => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const response =
-          await axios.get(
-            "http://localhost:5000/api/users",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setUsers(
-          response.data
+      const response =
+        await API.get(
+          "/users"
         );
 
-      } catch (error) {
+      setUsers(
+        response.data
+      );
 
-        console.log(error);
+    } catch (error) {
 
-      }
-    };
+      console.log(error);
+
+    }
+};
 
   // DELETE USER
-  const deleteUser =
-    async (id) => {
+const deleteUser =
+  async (id) => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
+      await API.delete(
+        `/users/${id}`
+      );
 
-        await axios.delete(
-          `http://localhost:5000/api/users/${id}`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
+      fetchUsers();
 
-        fetchUsers();
+    } catch (error) {
 
-      } catch (error) {
+      console.log(error);
 
-        console.log(error);
-
-      }
-    };
+    }
+};
 
   return (
     <div>

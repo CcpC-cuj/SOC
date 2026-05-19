@@ -1,11 +1,11 @@
-// client-admin/src/pages/Tasks.jsx
+// /Tasks.jsx
 
 import {
   useEffect,
   useState,
 } from "react";
 
-import axios from "axios";
+import API from "../../services/api";
 
 import {
   CheckCircle2,
@@ -26,68 +26,45 @@ const Tasks = () => {
   }, []);
 
   // FETCH TASKS
-  const fetchTasks =
-    async () => {
+const fetchTasks =
+  async () => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const response =
-          await axios.get(
-            "http://localhost:5000/api/tasks",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setTasks(
-          response.data
+      const response =
+        await API.get(
+          "/tasks"
         );
 
-      } catch (error) {
+      setTasks(
+        response.data
+      );
 
-        console.log(error);
+    } catch (error) {
 
-      }
-    };
+      console.log(error);
+
+    }
+};
 
   // APPROVE TASK
-  const approveTask =
-    async (id) => {
+const approveTask =
+  async (id) => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
+      await API.put(
+        `/tasks/${id}/approve`
+      );
 
-        await axios.put(
-          `http://localhost:5000/api/tasks/${id}/approve`,
-          {},
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
+      fetchTasks();
 
-        fetchTasks();
+    } catch (error) {
 
-      } catch (error) {
+      console.log(error);
 
-        console.log(error);
-
-      }
-    };
+    }
+};
 
   return (
     <div>

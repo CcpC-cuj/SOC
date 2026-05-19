@@ -52,64 +52,112 @@ const from =
 
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
 
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
+  try {
 
-      setLoading(true);
+    setLoading(true);
 
-      const data =
-        await loginUser(
-          formData
-        );
-
-      console.log(data.user);
-
-      localStorage.setItem(
-        "token",
-        data.token
+    const data =
+      await loginUser(
+        formData
       );
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
+    console.log(data.user);
+
+    // ADMIN
+    if (
+      data.user.authority ===
+      "admin"
+    ) {
+
+      navigate(
+        "/admin-dashboard"
       );
 
-      if (
-          data.user.authority
-          === "admin"
-        ) {
+    } else {
 
-          navigate(
-            "/admin-dashboard"
-          );
-
-        }
-        else {
-
-          navigate(
-            "/dashboard"
-          );
-
-        }
-      
-    } catch (error) {
-
-      console.log(
-        error.response?.data
-          ?.message || error.message
-      );
-
-    } finally {
-
-      setLoading(false);
-
+      // REDIRECT TO ORIGINAL PAGE
+      navigate(from);
     }
 
-  };
+  } catch (error) {
 
+    console.log(
+      error.response?.data
+        ?.message ||
+      error.message
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
+
+
+
+  // const handleSubmit = async (e) => {
+
+  //   e.preventDefault();
+
+  //   try {
+
+  //     setLoading(true);
+
+  //     const data =
+  //       await loginUser(
+  //         formData
+  //       );
+
+  //     console.log(data.user);
+
+  //     localStorage.setItem(
+  //       "token",
+  //       data.token
+  //     );
+
+  //     localStorage.setItem(
+  //       "user",
+  //       JSON.stringify(data.user)
+  //     );
+
+  //     if (
+  //         data.user.authority
+  //         === "admin"
+  //       ) {
+
+  //         navigate(
+  //           "/admin-dashboard"
+  //         );
+
+  //       }
+  //       else {
+
+  //         navigate(
+  //           "/dashboard"
+  //         );
+
+  //       }
+      
+  //   } catch (error) {
+
+  //     console.log(
+  //       error.response?.data
+  //         ?.message || error.message
+  //     );
+
+  //   } finally {
+
+  //     setLoading(false);
+
+  //   }
+
+  // };
+  
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050816] px-4 py-20 text-white sm:px-6 lg:px-8">
 

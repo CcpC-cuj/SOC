@@ -8,7 +8,7 @@ const ProtectedRoute = ({
 
   const token =
     localStorage.getItem(
-      "token"
+      "user_token"
     );
 
   if (!token) {

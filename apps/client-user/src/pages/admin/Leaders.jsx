@@ -3,8 +3,8 @@ import {
   useState,
 } from "react";
 
-import axios
-from "axios";
+import API
+from "../../services/api";
 
 const Leaders = () => {
 
@@ -33,8 +33,8 @@ const Leaders = () => {
       try {
 
         const response =
-          await axios.get(
-            "http://localhost:5000/api/projects"
+          await API.get(
+            "/projects"
           );
 
         setProjects(
@@ -46,85 +46,63 @@ const Leaders = () => {
         console.log(error);
 
       }
-    };
+  };
 
   // FETCH MEMBERS
-  const fetchMembers =
-    async (projectId) => {
+const fetchMembers =
+  async (projectId) => {
 
-      try {
+    try {
 
-        setSelectedProject(
-          projectId
+      setSelectedProject(
+        projectId
+      );
+
+      const response =
+        await API.get(
+          `/project-members/${projectId}`
         );
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
+      setMembers(
+        response.data
+      );
 
-        const response =
-          await axios.get(
-            `http://localhost:5000/api/project-members/${projectId}`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
+    } catch (error) {
 
-        setMembers(
-          response.data
-        );
+      console.log(error);
 
-      } catch (error) {
-
-        console.log(error);
-
-      }
-    };
+    }
+};
 
   // ASSIGN LEADER
-  const assignLeader =
-    async (userId) => {
+const assignLeader =
+  async (userId) => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
+      await API.post(
+        "/project-members/assign-leader",
+        {
+          projectId:
+            selectedProject,
 
-        await axios.post(
-          "http://localhost:5000/api/project-members/assign-leader",
-          {
-            projectId:
-              selectedProject,
+          userId,
+        }
+      );
 
-            userId,
-          },
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
+      fetchMembers(
+        selectedProject
+      );
 
-        fetchMembers(
-          selectedProject
-        );
+    } catch (error) {
 
-      } catch (error) {
+      console.log(
+        error.response?.data
+        || error.message
+      );
 
-        console.log(
-          error.response?.data
-          || error.message
-        );
-
-      }
-    };
+    }
+};
 
   return (
     <div>

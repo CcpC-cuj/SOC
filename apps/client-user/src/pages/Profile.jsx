@@ -1,10 +1,10 @@
+// 
 import {
   useEffect,
   useState,
 } from "react";
 
-import axios
-from "axios";
+import API from "../services/api";
 
 const Profile = () => {
 
@@ -41,146 +41,112 @@ const Profile = () => {
   }, []);
 
   // FETCH PROFILE
-  const fetchProfile =
-    async () => {
+const fetchProfile =
+  async () => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const response =
-          await axios.get(
-            "http://localhost:5000/api/users/profile",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setProfile(
-          response.data
+      const response =
+        await API.get(
+          "/users/profile"
         );
 
-        setForm({
-          name:
-            response.data.name || "",
+      setProfile(
+        response.data
+      );
 
-          bio:
-            response.data.bio || "",
+      setForm({
+        name:
+          response.data.name || "",
 
-          department:
-            response.data.department || "",
+        bio:
+          response.data.bio || "",
 
-          roll:
-            response.data.roll || "",
+        department:
+          response.data.department || "",
 
-          github:
-            response.data.github || "",
+        roll:
+          response.data.roll || "",
 
-          linkedin:
-            response.data.linkedin || "",
+        github:
+          response.data.github || "",
 
-            experienceLevel:
-                response.data
-                    .experienceLevel || "",
+        linkedin:
+          response.data.linkedin || "",
 
-          skills:
-            response.data.skills
-              ?.join(", ")
-            || "",
-        });
+        experienceLevel:
+          response.data
+            .experienceLevel || "",
 
-      } catch (error) {
+        skills:
+          response.data.skills
+            ?.join(", ")
+          || "",
+      });
 
-        console.log(error);
+    } catch (error) {
 
-      }
-    };
+      console.log(error);
+
+    }
+};
 
   // UPDATE PROFILE
-  const updateProfile =
-    async (e) => {
+const updateProfile =
+  async (e) => {
 
-      e.preventDefault();
+    e.preventDefault();
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
+      await API.put(
+        "/users/profile",
+        {
+          ...form,
 
-        await axios.put(
-          "http://localhost:5000/api/users/profile",
-          {
-            ...form,
+          skills:
+            form.skills
+              .split(",")
+              .map(
+                (skill) =>
+                  skill.trim()
+              )
+              .filter(Boolean),
+        }
+      );
 
-            sskills:
-                form.skills
-                    .split(",")
-                    .map(
-                    (skill) =>
-                        skill.trim()
-                    )
-                    .filter(Boolean),
+      setEditing(false);
 
-          },
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
+      fetchProfile();
 
-        setEditing(false);
+    } catch (error) {
 
-        fetchProfile();
+      console.log(error);
 
-      } catch (error) {
-
-        console.log(error);
-
-      }
-    };
+    }
+};
 
     // FETCH DASHBOARD
-        const fetchDashboard =
-        async () => {
+    const fetchDashboard =
+      async () => {
 
-            try {
+        try {
 
-            const token =
-                localStorage.getItem(
-                "token"
-                );
-
-            const response =
-                await axios.get(
-                "http://localhost:5000/api/users/profile/dashboard",
-                {
-                    headers: {
-                    Authorization:
-                        `Bearer ${token}`,
-                    },
-                }
-                );
-
-            setDashboard(
-                response.data
+          const response =
+            await API.get(
+              "/users/profile/dashboard"
             );
 
-            } catch (error) {
+          setDashboard(
+            response.data
+          );
 
-            console.log(error);
+        } catch (error) {
 
-            }
-        };
+          console.log(error);
+
+        }
+    };
 
   if (!profile) {
 

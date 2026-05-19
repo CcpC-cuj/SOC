@@ -1,11 +1,9 @@
-// client-admin/src/pages/Projects.jsx
-
 import {
   useEffect,
   useState,
 } from "react";
 
-import axios from "axios";
+import API from "../../services/api";
 
 import {
   Plus,
@@ -52,29 +50,29 @@ const [formData,
   }, []);
 
   // FETCH PROJECTS
-  const fetchProjects =
-    async () => {
+const fetchProjects =
+  async () => {
 
-      try {
+    try {
 
-        const response =
-          await axios.get(
-            "http://localhost:5000/api/projects"
-          );
-
-        setProjects(
-          response.data
+      const response =
+        await API.get(
+          "/projects"
         );
 
-      } catch (error) {
+      setProjects(
+        response.data
+      );
 
-        console.log(
-          error.response?.data
-          || error.message
-        );
+    } catch (error) {
 
-      }
-    };
+      console.log(
+        error.response?.data
+        || error.message
+      );
+
+    }
+};
 
   // INPUT CHANGE
   const handleChange =
@@ -89,78 +87,15 @@ const [formData,
     };
 
   // CREATE PROJECT
-  const createProject =
-    async (e) => {
-
-      e.preventDefault();
-
-      try {
-
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        await axios.post(
-          "http://localhost:5000/api/projects",
-          {
-            ...formData,
-
-            techStack:
-              formData.techStack
-                .split(",")
-                .map((t) =>
-                  t.trim()
-                ),
-          },
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
-
-        setFormData({
-          title: "",
-          description: "",
-          session: "",
-          season: "",
-          domain: "",
-          techStack: "",
-          maxMembers: 10,
-        });
-
-        fetchProjects();
-
-      } catch (error) {
-
-        console.log(error);
-
-         console.log(
-          error.response?.data
-          || error.message
-        );
-
-
-      }
-    };
-
-    // UPDATE PROJECT
-const updateProject =
+const createProject =
   async (e) => {
 
     e.preventDefault();
 
     try {
 
-      const token =
-        localStorage.getItem(
-          "token"
-        );
-
-      await axios.put(
-        `http://localhost:5000/api/projects/${editingId}`,
+      await API.post(
+        "/projects",
         {
           ...formData,
 
@@ -170,12 +105,53 @@ const updateProject =
               .map((t) =>
                 t.trim()
               ),
-        },
+        }
+      );
+
+      setFormData({
+        title: "",
+        description: "",
+        session: "",
+        season: "",
+        domain: "",
+        techStack: "",
+        maxMembers: 10,
+        status: "upcoming",
+      });
+
+      fetchProjects();
+
+    } catch (error) {
+
+      console.log(error);
+
+      console.log(
+        error.response?.data
+        || error.message
+      );
+
+    }
+};
+
+  // UPDATE PROJECT
+const updateProject =
+  async (e) => {
+
+    e.preventDefault();
+
+    try {
+
+      await API.put(
+        `/projects/${editingId}`,
         {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
+          ...formData,
+
+          techStack:
+            formData.techStack
+              .split(",")
+              .map((t) =>
+                t.trim()
+              ),
         }
       );
 
@@ -189,6 +165,7 @@ const updateProject =
         domain: "",
         techStack: "",
         maxMembers: 10,
+        status: "upcoming",
       });
 
       fetchProjects();
@@ -204,55 +181,33 @@ const updateProject =
 };
 
   // DELETE PROJECT
-  const deleteProject =
-    async (id) => {
+const deleteProject =
+  async (id) => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
+      await API.delete(
+        `/projects/${id}`
+      );
 
-        await axios.delete(
-          `http://localhost:5000/api/projects/${id}`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
+      fetchProjects();
 
-        fetchProjects();
+    } catch (error) {
 
-      } catch (error) {
+      console.log(error);
 
-        console.log(error);
-
-      }
-    };
+    }
+};
 
 
-    const fetchDashboard =
+const fetchDashboard =
   async () => {
 
     try {
 
-      const token =
-        localStorage.getItem(
-          "token"
-        );
-
       const response =
-        await axios.get(
-          "http://localhost:5000/api/users/profile/dashboard",
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
+        await API.get(
+          "/users/profile/dashboard"
         );
 
       setDashboard(

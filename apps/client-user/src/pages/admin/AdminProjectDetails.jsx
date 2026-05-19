@@ -7,8 +7,8 @@ import {
   useParams,
 } from "react-router-dom";
 
-import axios
-from "axios";
+import API
+from "../../services/api";
 
 const AdminProjectDetails = () => {
 
@@ -44,141 +44,103 @@ const AdminProjectDetails = () => {
   }, []);
 
   // PROJECT
-  const fetchProject =
-    async () => {
+const fetchProject =
+  async () => {
 
-      try {
+    try {
 
-        const response =
-          await axios.get(
-            `http://localhost:5000/api/projects/${id}`
-          );
-
-        setProject(
-          response.data
+      const response =
+        await API.get(
+          `/projects/${id}`
         );
 
-      } catch (error) {
+      setProject(
+        response.data
+      );
 
-        console.log(error);
+    } catch (error) {
 
-      }
-    };
+      console.log(error);
+
+    }
+};
 
   // MEMBERS
-  const fetchMembers =
-    async () => {
+const fetchMembers =
+  async () => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const response =
-          await axios.get(
-            `http://localhost:5000/api/project-members/${id}`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setMembers(
-          response.data
+      const response =
+        await API.get(
+          `/project-members/${id}`
         );
 
-      } catch (error) {
+      setMembers(
+        response.data
+      );
 
-        console.log(error);
+    } catch (error) {
 
-      }
-    };
+      console.log(error);
+
+    }
+};
 
   // TASKS
-  const fetchTasks =
-    async () => {
+const fetchTasks =
+  async () => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const response =
-          await axios.get(
-            `http://localhost:5000/api/tasks/project/${id}`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setTasks(
-          response.data
+      const response =
+        await API.get(
+          `/tasks/project/${id}`
         );
 
-      } catch (error) {
+      setTasks(
+        response.data
+      );
 
-        console.log(error);
+    } catch (error) {
 
-      }
-    };
+      console.log(error);
+
+    }
+};
 
   // SUBMISSION
-  const fetchSubmission =
-    async () => {
+const fetchSubmission =
+  async () => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const response =
-          await axios.get(
-            `http://localhost:5000/api/project-submissions/${id}`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setSubmission(
-          response.data
+      const response =
+        await API.get(
+          `/project-submissions/${id}`
         );
 
-      } catch (error) {
+      setSubmission(
+        response.data
+      );
 
-        console.log(error);
+    } catch (error) {
 
-      }
-    };
+      console.log(error);
+
+    }
+};
 
 
-    const reviewSubmission =
+const reviewSubmission =
   async (
     status
   ) => {
 
     try {
 
-      const token =
-        localStorage.getItem(
-          "token"
-        );
-
-      await axios.put(
-        `http://localhost:5000/api/project-submissions/${submission._id}/review`,
+      await API.put(
+        `/project-submissions/${submission._id}/review`,
         {
           status,
 
@@ -186,12 +148,6 @@ const AdminProjectDetails = () => {
             status === "approved"
             ? "Project approved"
             : "Project rejected",
-        },
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
         }
       );
 

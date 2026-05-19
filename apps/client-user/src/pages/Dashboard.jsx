@@ -3,7 +3,7 @@
 import { useEffect, useState }
 from "react";
 
-import axios from "axios";
+import API from "../services/api";
 
 import {
   FolderKanban,
@@ -28,40 +28,30 @@ const Dashboard = () => {
 
   }, []);
 
+  
   const fetchDashboard =
-    async () => {
+  async () => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-        const response =
-          await axios.get(
-            "http://localhost:5000/api/dashboard",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-        setDashboard(
-          response.data
+      const response =
+        await API.get(
+          "/dashboard"
         );
 
-      } catch (error) {
+      setDashboard(
+        response.data
+      );
 
-        console.log(
-      error.response?.data
-      || error.message
-    );
+    } catch (error) {
 
-      }
-    };
+      console.log(
+        error.response?.data
+        || error.message
+      );
+
+    }
+};
 
   if (!dashboard) {
     return (

@@ -5,7 +5,7 @@ import {
   useState,
 } from "react";
 
-import axios from "axios";
+import API from "../services/api";
 
 import { motion }
 from "framer-motion";
@@ -34,28 +34,29 @@ const Projects = () => {
   }, []);
 
   const fetchProjects =
-    async () => {
+  async () => {
 
-      try {
+    try {
 
-        const response =
-          await axios.get(
-            "http://localhost:5000/api/projects"
-          );
-
-        setProjects(
-          response.data
+      const response =
+        await API.get(
+          "/projects"
         );
 
-      } catch (error) {
+      setProjects(
+        response.data
+      );
 
-        console.log(
-          error.response?.data
-          || error.message
-        );
+    } catch (error) {
 
-      }
-    };
+      console.log(
+        error.response?.data
+        || error.message
+      );
+
+    }
+};
+
 
   return (
     <div className="min-h-screen bg-[#050816] px-4 py-16 text-white sm:px-6 lg:px-10">

@@ -53,91 +53,88 @@ const Register = () => {
 
   };
 
-  const handleSubmit = async (e) => {
+  // HANDLE SUBMIT
+const handleSubmit = async (e) => {
 
-    e.preventDefault();
+  e.preventDefault();
 
-    setError("");
+  setError("");
 
-      // REQUIRED
-      if (
-        !formData.name
-        ||
-        !formData.email
-        ||
-        !formData.password
-      ) {
+  // REQUIRED
+  if (
+    !formData.name ||
+    !formData.email ||
+    !formData.password
+  ) {
 
-        return setError(
-          "Please fill all required fields"
-        );
-      }
+    return setError(
+      "Please fill all required fields"
+    );
+  }
 
-      // PASSWORD LENGTH
-      if (
-        formData.password.length
-        < 6
-      ) {
+  // PASSWORD LENGTH
+  if (
+    formData.password.length < 6
+  ) {
 
-        return setError(
-          "Password must be at least 6 characters"
-        );
-      }
+    return setError(
+      "Password must be at least 6 characters"
+    );
+  }
 
-      // PASSWORD MATCH
-      if (
-        formData.password
-        !==
-        formData.confirmPassword
-      ) {
+  // PASSWORD MATCH
+  if (
+    formData.password !==
+    formData.confirmPassword
+  ) {
 
-        return setError(
-          "Passwords do not match"
-        );
-      }
+    return setError(
+      "Passwords do not match"
+    );
+  }
 
-    try {
+  try {
 
-      setLoading(true);
+    setLoading(true);
 
-      const payload = {
-          ...formData,
-        };
+    // PREPARE PAYLOAD
+    const payload = {
+      ...formData,
 
-        delete payload.confirmPassword;
+      skills:
+        formData.skills
+          .split(",")
+          .map((skill) =>
+            skill.trim()
+          )
+          .filter(Boolean),
+    };
 
-        const data =
-          await registerUser(
-            payload
-        );
+    // REMOVE CONFIRM PASSWORD
+    delete payload.confirmPassword;
 
-      localStorage.setItem(
-        "token",
-        data.token
-      );
+    // REGISTER USER
+    await registerUser(
+      payload
+    );
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
-      );
+    // REDIRECT
+    navigate("/dashboard");
 
-      navigate("/dashboard");
+  } catch (error) {
 
-    } catch (error) {
+    setError(
+      error.response?.data
+        ?.message ||
+      "Registration failed"
+    );
 
-      setError(
-        error.response?.data
-          ?.message
-        || "Registration failed"
-      );
+  } finally {
 
-    } finally {
+    setLoading(false);
 
-      setLoading(false);
-
-    }
-
-  };
+  }
+};
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050816] text-white">

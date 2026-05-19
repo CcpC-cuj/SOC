@@ -5,7 +5,7 @@ import {
   useState,
 } from "react";
 
-import axios from "axios";
+import API from "../services/api";
 
 import {
   useParams,
@@ -67,8 +67,8 @@ const ProjectDetails = () => {
       try {
 
         const response =
-          await axios.get(
-            `http://localhost:5000/api/projects/${id}`
+          await API.get(
+            `/projects/${id}`
           );
 
         setProject(
@@ -83,7 +83,7 @@ const ProjectDetails = () => {
         );
 
       }
-    };
+  };
 
   // OPEN JOIN FLOW
   const handleJoinClick =
@@ -91,7 +91,7 @@ const ProjectDetails = () => {
 
       const token =
         localStorage.getItem(
-          "token"
+          "user_token"
         );
 
       // NOT LOGGED IN
@@ -119,20 +119,9 @@ const ProjectDetails = () => {
 
         try {
 
-          const token =
-            localStorage.getItem(
-              "token"
-            );
-
           const response =
-            await axios.get(
-              `http://localhost:5000/api/project-members/${id}`,
-              {
-                headers: {
-                  Authorization:
-                    `Bearer ${token}`,
-                },
-              }
+            await API.get(
+              `/project-members/${id}`
             );
 
           setMembers(
@@ -148,56 +137,45 @@ const ProjectDetails = () => {
 
   // JOIN PROJECT
   const joinProject =
-    async () => {
+  async () => {
 
-      try {
+    try {
 
-        const token =
-          localStorage.getItem(
-            "token"
-          );
-
-          console.log(
+      console.log(
         selectedRoles
       );
 
-        await axios.post(
-        "http://localhost:5000/api/project-members/join",
+      await API.post(
+        "/project-members/join",
         {
-            projectId:
+          projectId:
             project._id,
 
-            roles:
+          roles:
             selectedRoles,
-        },
-        {
-            headers: {
-            Authorization:
-                `Bearer ${token}`,
-            },
         }
-        );
+      );
 
-        alert(
-          "Joined Successfully"
-        );
+      alert(
+        "Joined Successfully"
+      );
 
-        setShowModal(false);
+      setShowModal(false);
 
-      } catch (error) {
+    } catch (error) {
 
-        console.log(
+      console.log(
         error.response?.data
-        );
+      );
 
-        alert(
-            error.response?.data
-                ?.message
-            || "Join failed"
-            );
+      alert(
+        error.response?.data
+          ?.message
+        || "Join failed"
+      );
 
-      }
-    };
+    }
+};
 
   if (!project) {
 

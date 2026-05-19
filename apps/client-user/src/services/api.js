@@ -7,24 +7,128 @@
 
 // export default API;
 
-import axios
-from "axios";
+// import axios
+// from "axios";
 
-const API =
-  axios.create({
-    baseURL:
-      "http://localhost:5000/api",
-  });
+// const API =
+//   axios.create({
+//     baseURL:
+//       "http://localhost:5000/api",
+//   });
+
+// // REQUEST INTERCEPTOR
+// API.interceptors.request.use(
+//   (config) => {
+
+//     const token =
+//       localStorage.getItem(
+//         "token"
+//       );
+
+//     if (token) {
+
+//       config.headers.Authorization =
+//         `Bearer ${token}`;
+//     }
+
+//     return config;
+//   }
+// );
+
+// // RESPONSE INTERCEPTOR
+// API.interceptors.response.use(
+
+//   (response) =>
+//     response,
+
+//   (error) => {
+
+//     // TOKEN INVALID
+//     if (
+//       error.response
+//       &&
+//       error.response.status
+//       === 401
+//     ) {
+
+//       localStorage.removeItem(
+//         "token"
+//       );
+
+//       localStorage.removeItem(
+//         "user"
+//       );
+
+//       window.location.href =
+//         "/";
+//     }
+
+//     // SERVER OFFLINE
+//     if (
+//       error.code
+//       === "ERR_NETWORK"
+//     ) {
+
+//       localStorage.removeItem(
+//         "token"
+//       );
+
+//       localStorage.removeItem(
+//         "user"
+//       );
+
+//       window.location.href =
+//         "/";
+//     }
+
+//     return Promise.reject(
+//       error
+//     );
+//   }
+// );
+
+// export default API;
+
+
+// services/api.js
+
+import axios from "axios";
+
+import {
+  clearAuth,
+} from "./authService";
+
+const API = axios.create({
+
+  baseURL:
+    import.meta.env.VITE_API_URL,
+
+  withCredentials: true,
+});
+
 
 // REQUEST INTERCEPTOR
 API.interceptors.request.use(
+
   (config) => {
 
-    const token =
+    // ADMIN TOKEN
+    const adminToken =
       localStorage.getItem(
-        "token"
+        "admin_token"
       );
 
+    // USER TOKEN
+    const userToken =
+      localStorage.getItem(
+        "user_token"
+      );
+
+    // PRIORITY
+    const token =
+      adminToken || userToken;
+
+    // ATTACH TOKEN
     if (token) {
 
       config.headers.Authorization =
@@ -32,58 +136,46 @@ API.interceptors.request.use(
     }
 
     return config;
+  },
+
+  (error) => {
+
+    return Promise.reject(error);
   }
 );
+
 
 // RESPONSE INTERCEPTOR
 API.interceptors.response.use(
 
-  (response) =>
-    response,
+  (response) => response,
 
-  (error) => {
+  async (error) => {
 
-    // TOKEN INVALID
+    // UNAUTHORIZED
     if (
-      error.response
-      &&
-      error.response.status
-      === 401
+      error.response &&
+      error.response.status === 401
     ) {
 
-      localStorage.removeItem(
-        "token"
+      console.error(
+        "Unauthorized request"
       );
 
-      localStorage.removeItem(
-        "user"
-      );
-
-      window.location.href =
-        "/";
+      clearAuth();
     }
 
     // SERVER OFFLINE
     if (
-      error.code
-      === "ERR_NETWORK"
+      error.code === "ERR_NETWORK"
     ) {
 
-      localStorage.removeItem(
-        "token"
+      console.error(
+        "Server unreachable"
       );
-
-      localStorage.removeItem(
-        "user"
-      );
-
-      window.location.href =
-        "/";
     }
 
-    return Promise.reject(
-      error
-    );
+    return Promise.reject(error);
   }
 );
 

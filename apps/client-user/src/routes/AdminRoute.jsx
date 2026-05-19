@@ -10,12 +10,12 @@ const AdminRoute = ({
 
   const token =
     localStorage.getItem(
-      "token"
+      "admin_token"
     );
 
   const userData =
     localStorage.getItem(
-      "user"
+      "admin_user"
     );
 
   const user =
