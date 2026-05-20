@@ -171,15 +171,69 @@ app.use(limiter);
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.USER_CLIENT_URL,
+    origin: function (
+      origin,
+      callback
+    ) {
+
+      const allowedOrigins = [
+        "http://localhost:5173",
+        process.env.USER_CLIENT_URL,
+      ];
+
+      // ALLOW POSTMAN / MOBILE / SERVER REQUESTS
+      if (!origin) {
+
+        return callback(
+          null,
+          true
+        );
+      }
+
+      // ALLOW FRONTEND
+      if (
+        allowedOrigins.includes(
+          origin
+        )
+      ) {
+
+        return callback(
+          null,
+          true
+        );
+      }
+
+      // BLOCK OTHERS
+      return callback(
+        new Error(
+          "Not allowed by CORS"
+        )
+      );
+    },
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
     ],
 
     credentials: true,
   })
 );
 
+// app.options("*", cors());
+app.options(
+  /.*/,
+  cors()
+);
 
 // BODY PARSER
 app.use(express.json());
