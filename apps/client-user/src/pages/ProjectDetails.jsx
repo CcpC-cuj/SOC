@@ -50,6 +50,10 @@ const ProjectDetails = () => {
     setShowModal] =
     useState(false);
 
+    const [joining,
+    setJoining] =
+    useState(false);
+
  const [selectedRoles,
   setSelectedRoles] =
   useState([]);
@@ -136,14 +140,57 @@ const ProjectDetails = () => {
     };
 
   // JOIN PROJECT
-  const joinProject =
+//   const joinProject =
+//   async () => {
+
+//     try {
+
+//       console.log(
+//         selectedRoles
+//       );
+
+//       await API.post(
+//         "/project-members/join",
+//         {
+//           projectId:
+//             project._id,
+
+//           roles:
+//             selectedRoles,
+//         }
+//       );
+
+//       alert(
+//         "Joined Successfully"
+//       );
+
+//       setShowModal(false);
+
+//     } catch (error) {
+
+//       console.log(
+//         error.response?.data
+//       );
+
+//       alert(
+//         error.response?.data
+//           ?.message
+//         || "Join failed"
+//       );
+
+//     }
+// };
+
+
+const joinProject =
   async () => {
+
+    // PREVENT DOUBLE CLICK
+    if (joining) return;
 
     try {
 
-      console.log(
-        selectedRoles
-      );
+      setJoining(true);
 
       await API.post(
         "/project-members/join",
@@ -160,6 +207,8 @@ const ProjectDetails = () => {
         "Joined Successfully"
       );
 
+      fetchMembers();
+
       setShowModal(false);
 
     } catch (error) {
@@ -174,6 +223,9 @@ const ProjectDetails = () => {
         || "Join failed"
       );
 
+    } finally {
+
+      setJoining(false);
     }
 };
 
@@ -187,6 +239,7 @@ const ProjectDetails = () => {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-[#050816] px-4 py-14 text-white sm:px-6 lg:px-10">
@@ -529,6 +582,7 @@ const ProjectDetails = () => {
                 }
                 disabled={
                   selectedRoles.length === 0
+                  || joining
                 }
                 className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-6 py-4 font-bold disabled:opacity-50"
               >

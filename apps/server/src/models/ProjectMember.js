@@ -58,6 +58,18 @@ const projectMemberSchema =
     }
   );
 
+
+  // PREVENT DUPLICATE MEMBERS
+projectMemberSchema.index(
+  {
+    user: 1,
+    project: 1,
+  },
+  {
+    unique: true,
+  }
+);
+
 export default mongoose.model(
   "ProjectMember",
   projectMemberSchema
