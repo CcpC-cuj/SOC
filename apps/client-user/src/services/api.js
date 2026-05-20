@@ -112,21 +112,10 @@ API.interceptors.request.use(
 
   (config) => {
 
-    // ADMIN TOKEN
-    const adminToken =
-      localStorage.getItem(
-        "admin_token"
-      );
-
-    // USER TOKEN
-    const userToken =
+    const token =
       localStorage.getItem(
         "user_token"
       );
-
-    // PRIORITY
-    const token =
-      adminToken || userToken;
 
     // ATTACH TOKEN
     if (token) {

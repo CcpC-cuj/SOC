@@ -117,14 +117,42 @@ export const loginUser = async (
 // USER LOGOUT
 export const logoutUser = () => {
 
-  clearAuth();
+  localStorage.removeItem(
+    "user_token"
+  );
+
+  localStorage.removeItem(
+    "user"
+  );
+
+  window.location.href =
+    "/login";
 };
 
 
 // ADMIN LOGOUT
 export const logoutAdmin = () => {
 
-  clearAuth();
+  localStorage.removeItem(
+    "admin_token"
+  );
+
+  localStorage.removeItem(
+    "admin_user"
+  );
+
+  window.location.href =
+    "/login";
+};
+
+
+// GET USER TOKEN
+export const getUserToken =
+  () => {
+
+    return localStorage.getItem(
+      "user_token"
+    );
 };
 
 
@@ -183,4 +211,23 @@ export const clearAuth = () => {
   localStorage.removeItem(
     "admin_user"
   );
+
+  window.location.href =
+    "/login";
+};
+
+
+export const clearAdminAuth =
+  () => {
+
+    localStorage.removeItem(
+      "admin_token"
+    );
+
+    localStorage.removeItem(
+      "admin_user"
+    );
+
+    window.location.href =
+      "/login";
 };

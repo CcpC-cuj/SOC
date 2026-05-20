@@ -3,7 +3,10 @@ import {
   useState,
 } from "react";
 
-import API from "../../services/api";
+// import API from "../../services/api";
+
+import AdminAPI
+from "../../services/adminApi";
 
 import {
   Plus,
@@ -56,7 +59,7 @@ const fetchProjects =
     try {
 
       const response =
-        await API.get(
+        await AdminAPI.get(
           "/projects"
         );
 
@@ -94,7 +97,7 @@ const createProject =
 
     try {
 
-      await API.post(
+      await AdminAPI.post(
         "/projects",
         {
           ...formData,
@@ -141,7 +144,7 @@ const updateProject =
 
     try {
 
-      await API.put(
+      await AdminAPI.put(
         `/projects/${editingId}`,
         {
           ...formData,
@@ -186,7 +189,7 @@ const deleteProject =
 
     try {
 
-      await API.delete(
+      await AdminAPI.delete(
         `/projects/${id}`
       );
 
@@ -206,7 +209,7 @@ const fetchDashboard =
     try {
 
       const response =
-        await API.get(
+        await AdminAPI.get(
           "/users/profile/dashboard"
         );
 

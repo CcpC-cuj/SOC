@@ -181,6 +181,16 @@ app.use(
         process.env.USER_CLIENT_URL,
       ];
 
+      console.log(
+        "Request Origin:",
+        origin
+      );
+
+      console.log(
+        "Allowed Origins:",
+        allowedOrigins
+      );
+
       // ALLOW POSTMAN / MOBILE / SERVER REQUESTS
       if (!origin) {
 
@@ -229,11 +239,27 @@ app.use(
   })
 );
 
+
+
 // app.options("*", cors());
 app.options(
   /.*/,
   cors()
 );
+
+
+// app.use(
+//   cors({
+//     origin: [
+//       "http://localhost:5173",
+//       process.env.USER_CLIENT_URL,
+//     ],
+
+//     credentials: true,
+//   })
+// );
+
+
 
 // BODY PARSER
 app.use(express.json());

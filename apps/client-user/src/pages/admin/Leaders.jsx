@@ -3,8 +3,11 @@ import {
   useState,
 } from "react";
 
-import API
-from "../../services/api";
+// import API
+// from "../../services/api";
+import AdminAPI
+from "../../services/adminApi";
+
 
 const Leaders = () => {
 
@@ -59,7 +62,7 @@ const fetchMembers =
       );
 
       const response =
-        await API.get(
+        await AdminAPI.get(
           `/project-members/${projectId}`
         );
 
@@ -80,7 +83,7 @@ const assignLeader =
 
     try {
 
-      await API.post(
+      await AdminAPI.post(
         "/project-members/assign-leader",
         {
           projectId:

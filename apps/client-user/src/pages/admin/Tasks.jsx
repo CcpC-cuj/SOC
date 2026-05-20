@@ -5,7 +5,11 @@ import {
   useState,
 } from "react";
 
-import API from "../../services/api";
+// import API from "../../services/api";
+
+
+import AdminAPI
+from "../../services/adminApi";
 
 import {
   CheckCircle2,
@@ -32,7 +36,7 @@ const fetchTasks =
     try {
 
       const response =
-        await API.get(
+        await AdminAPI.get(
           "/tasks"
         );
 
@@ -53,7 +57,7 @@ const approveTask =
 
     try {
 
-      await API.put(
+      await AdminAPI.put(
         `/tasks/${id}/approve`
       );
 

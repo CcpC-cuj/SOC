@@ -5,8 +5,10 @@ import {
   useState,
 } from "react";
 
-import API
-from "../../services/api";
+// import API
+// from "../../services/api";
+
+import AdminAPI from "../../services/adminApi";
 
 const Dashboard = () => {
 
@@ -32,7 +34,7 @@ const Dashboard = () => {
       try {
 
         const response =
-          await API.get(
+          await AdminAPI.get(
             "/dashboard/admin"
           );
 

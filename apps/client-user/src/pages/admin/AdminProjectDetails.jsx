@@ -7,8 +7,8 @@ import {
   useParams,
 } from "react-router-dom";
 
-import API
-from "../../services/api";
+// import API from "../../services/adminApi";
+import AdminAPI from "../../services/adminApi";
 
 const AdminProjectDetails = () => {
 
@@ -50,7 +50,7 @@ const fetchProject =
     try {
 
       const response =
-        await API.get(
+        await AdminAPI.get(
           `/projects/${id}`
         );
 
@@ -72,7 +72,7 @@ const fetchMembers =
     try {
 
       const response =
-        await API.get(
+        await AdminAPI.get(
           `/project-members/${id}`
         );
 
@@ -94,7 +94,7 @@ const fetchTasks =
     try {
 
       const response =
-        await API.get(
+        await AdminAPI.get(
           `/tasks/project/${id}`
         );
 
@@ -116,7 +116,7 @@ const fetchSubmission =
     try {
 
       const response =
-        await API.get(
+        await AdminAPI.get(
           `/project-submissions/${id}`
         );
 
@@ -139,7 +139,7 @@ const reviewSubmission =
 
     try {
 
-      await API.put(
+      await AdminAPI.put(
         `/project-submissions/${submission._id}/review`,
         {
           status,

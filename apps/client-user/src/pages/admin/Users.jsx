@@ -4,7 +4,11 @@ import {
   useState,
 } from "react";
 
-import API from "../../services/api";
+// import API from "../../services/api";
+
+
+import AdminAPI
+from "../../services/adminApi";
 
 import {
   Trash2,
@@ -31,7 +35,7 @@ const fetchUsers =
     try {
 
       const response =
-        await API.get(
+        await AdminAPI.get(
           "/users"
         );
 
@@ -52,7 +56,7 @@ const deleteUser =
 
     try {
 
-      await API.delete(
+      await AdminAPI.delete(
         `/users/${id}`
       );
 
