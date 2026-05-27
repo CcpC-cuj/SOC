@@ -1,296 +1,353 @@
-// src/pages/Dashboard.jsx
-
-import { useEffect, useState }
-from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+import {
+  CheckCircle2,
+  ClipboardList,
+  Clock3,
+  FolderKanban,
+  Sparkles,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 import API from "../services/api";
-
 import {
-  FolderKanban,
-  ClipboardList,
-  CheckCircle2,
-  Clock3,
-} from "lucide-react";
+  registrationStatusLabels,
+} from "../constants/registration";
 
-import {
-  Link,
-} from "react-router-dom";
+const statusCopy = {
+  pending_review:
+    "Your profile is in the review queue. The team will match you to a project after reading your preferences and strengths.",
+  shortlisted:
+    "You are shortlisted. Keep an eye on your dashboard while the organizing team finalizes assignments.",
+  waitlisted:
+    "You are currently waitlisted. This usually happens when squads are being balanced or capacities are full.",
+  assigned:
+    "You have been assigned. Open your workspace and start building with your team.",
+  rejected:
+    "Your current registration is not moving forward right now. Reach out to the organizers if you want feedback.",
+};
+
+const statusTheme = {
+  pending_review:
+    "bg-yellow-500/10 text-yellow-200 ring-yellow-300/20",
+  shortlisted:
+    "bg-cyan-500/10 text-cyan-100 ring-cyan-300/20",
+  waitlisted:
+    "bg-orange-500/10 text-orange-100 ring-orange-300/20",
+  assigned:
+    "bg-emerald-500/10 text-emerald-100 ring-emerald-300/20",
+  rejected:
+    "bg-rose-500/10 text-rose-100 ring-rose-300/20",
+};
 
 const Dashboard = () => {
-
-  const [dashboard,
-    setDashboard] =
+  const [dashboard, setDashboard] =
     useState(null);
 
   useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        const response =
+          await API.get("/dashboard");
+        setDashboard(response.data);
+      } catch (error) {
+        console.error(
+          error.response?.data ||
+            error.message
+        );
+      }
+    }
 
     fetchDashboard();
-
   }, []);
-
-  
-  const fetchDashboard =
-  async () => {
-
-    try {
-
-      const response =
-        await API.get(
-          "/dashboard"
-        );
-
-      setDashboard(
-        response.data
-      );
-
-    } catch (error) {
-
-      console.log(
-        error.response?.data
-        || error.message
-      );
-
-    }
-};
 
   if (!dashboard) {
     return (
-      <div className="p-10 text-white">
-        Loading...
+      <div className="min-h-screen bg-[#050816] p-10 text-white">
+        Loading dashboard...
       </div>
     );
   }
 
+  const registrationStatus =
+    dashboard.user
+      .registrationStatus ||
+    "pending_review";
+
   return (
     <div className="min-h-screen bg-[#050816] px-4 py-10 text-white sm:px-6 lg:px-10">
-
-      {/* HEADER */}
-      <div className="mb-12">
-
-        <h1 className="text-5xl font-black">
-
-          Welcome,
-          {" "}
-
-          <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-blue-500 bg-clip-text text-transparent">
-
-            {
-              dashboard.user.name
-            }
-
-          </span>
-
-        </h1>
-
-        <p className="mt-4 text-slate-400">
-
-          Track your projects,
-          tasks, and activity.
-
+      <div className="mb-10">
+        <p className="text-sm uppercase tracking-[0.24em] text-cyan-300">
+          Participant Dashboard
         </p>
-
+        <h1 className="mt-3 text-5xl font-black">
+          Welcome back,
+          {" "}
+          <span className="bg-gradient-to-r from-cyan-400 to-fuchsia-500 bg-clip-text text-transparent">
+            {dashboard.user.name}
+          </span>
+        </h1>
+        <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-400">
+          Track your registration progress, review your assignment status, and step into your workspace when your team is ready.
+        </p>
       </div>
 
-      {/* ANALYTICS */}
+      <div className="mb-12 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm uppercase tracking-[0.22em] text-slate-400">
+              Registration status
+            </p>
+            <h2 className="mt-3 text-3xl font-black">
+              {
+                registrationStatusLabels[
+                  registrationStatus
+                ]
+              }
+            </h2>
+            <p className="mt-4 max-w-3xl text-slate-300">
+              {statusCopy[registrationStatus]}
+            </p>
+          </div>
+
+          <span
+            className={`rounded-full px-4 py-2 text-sm font-semibold ring-1 ${
+              statusTheme[
+                registrationStatus
+              ]
+            }`}
+          >
+            {
+              registrationStatusLabels[
+                registrationStatus
+              ]
+            }
+          </span>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {[
+            {
+              icon: Sparkles,
+              label: "Preferred domains",
+              value:
+                dashboard.user
+                  .preferredDomains
+                  ?.join(", ") ||
+                "Not set yet",
+            },
+            {
+              icon: FolderKanban,
+              label: "Assigned projects",
+              value:
+                String(
+                  dashboard.analytics
+                    .totalProjects
+                ),
+            },
+            {
+              icon: Clock3,
+              label:
+                "Pending tasks",
+              value:
+                String(
+                  dashboard.analytics
+                    .pendingTasks
+                ),
+            },
+          ].map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                key={item.label}
+                className="rounded-3xl border border-white/10 bg-[#07101c] p-5"
+              >
+                <Icon
+                  className="mb-4 text-cyan-300"
+                  size={22}
+                />
+                <p className="text-sm text-slate-400">
+                  {item.label}
+                </p>
+                <h3 className="mt-2 text-xl font-bold text-slate-100">
+                  {item.value}
+                </h3>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="mb-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-
-          <FolderKanban
-            className="mb-4 text-cyan-400"
-            size={28}
-          />
-
-          <h2 className="text-4xl font-black">
-
-            {
+        {[
+          {
+            icon: FolderKanban,
+            label:
+              "Joined Projects",
+            value:
               dashboard.analytics
-                .totalProjects
-            }
-
-          </h2>
-
-          <p className="mt-2 text-slate-400">
-            Joined Projects
-          </p>
-
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-
-          <ClipboardList
-            className="mb-4 text-purple-400"
-            size={28}
-          />
-
-          <h2 className="text-4xl font-black">
-
-            {
+                .totalProjects,
+            color: "text-cyan-300",
+          },
+          {
+            icon: ClipboardList,
+            label: "Total Tasks",
+            value:
               dashboard.analytics
-                .totalTasks
-            }
-
-          </h2>
-
-          <p className="mt-2 text-slate-400">
-            Total Tasks
-          </p>
-
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-
-          <Clock3
-            className="mb-4 text-yellow-400"
-            size={28}
-          />
-
-          <h2 className="text-4xl font-black">
-
-            {
+                .totalTasks,
+            color:
+              "text-fuchsia-300",
+          },
+          {
+            icon: Clock3,
+            label:
+              "Pending Tasks",
+            value:
               dashboard.analytics
-                .pendingTasks
-            }
-
-          </h2>
-
-          <p className="mt-2 text-slate-400">
-            Pending Tasks
-          </p>
-
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-
-          <CheckCircle2
-            className="mb-4 text-green-400"
-            size={28}
-          />
-
-          <h2 className="text-4xl font-black">
-
-            {
+                .pendingTasks,
+            color:
+              "text-yellow-300",
+          },
+          {
+            icon: CheckCircle2,
+            label:
+              "Approved Tasks",
+            value:
               dashboard.analytics
-                .approvedTasks
-            }
+                .approvedTasks,
+            color:
+              "text-emerald-300",
+          },
+        ].map((card) => {
+          const Icon = card.icon;
 
-          </h2>
-
-          <p className="mt-2 text-slate-400">
-            Approved Tasks
-          </p>
-
-        </div>
-
+          return (
+            <div
+              key={card.label}
+              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+            >
+              <Icon
+                className={`mb-4 ${card.color}`}
+                size={28}
+              />
+              <h2 className="text-4xl font-black">
+                {card.value}
+              </h2>
+              <p className="mt-2 text-slate-400">
+                {card.label}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
-      {/* PROJECTS */}
-        <div className="mb-12">
+      <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-3xl font-black">
+              My Assignment
+            </h2>
+            <p className="mt-2 text-slate-400">
+              When the organizers place you into a project, it will appear here.
+            </p>
+          </div>
+          <Link
+            to="/projects"
+            className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:border-cyan-400/30 hover:text-cyan-200"
+          >
+            Browse showcase projects
+          </Link>
+        </div>
 
-          <h2 className="mb-6 text-3xl font-black">
-
-            My Projects
-
-          </h2>
-
+        {dashboard.memberships.length > 0 ? (
           <div className="grid gap-6 lg:grid-cols-2">
-
-            {
-              dashboard.memberships.map(
-                (member) => (
-
-                  <Link
-                    to={`/workspace/${member.project?._id}`}
-                    key={member._id}
-                    className="rounded-3xl border border-white/10 bg-white/5 p-6 transition hover:border-cyan-500/30 hover:bg-white/10"
-                  >
-
-                    {/* TOP */}
-                    <div className="mb-5 flex items-start justify-between">
-
-                      <div>
-
-                        <h3 className="text-3xl font-black">
-
-                          {
-                            member.project
-                              ?.title
-                          }
-
-                        </h3>
-
-                        <p className="mt-3 text-slate-400">
-
-                          {
-                            member.project
-                              ?.description
-                          }
-
-                        </p>
-
-                      </div>
-
-                      {
-                        member.isLeader && (
-
-                          <div className="rounded-full bg-green-500/10 px-4 py-2 text-sm text-green-300">
-
-                            Leader
-
-                          </div>
-                        )
-                      }
-
+            {dashboard.memberships.map(
+              (member) => (
+                <Link
+                  to={`/workspace/${member.project?._id}`}
+                  key={member._id}
+                  className="rounded-3xl border border-white/10 bg-[#07101c] p-6 transition hover:border-cyan-400/30"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-3xl font-black">
+                        {
+                          member.project
+                            ?.title
+                        }
+                      </h3>
+                      <p className="mt-3 text-slate-400">
+                        {
+                          member.project
+                            ?.description
+                        }
+                      </p>
                     </div>
+                    {member.isLeader && (
+                      <span className="rounded-full bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200">
+                        Leader
+                      </span>
+                    )}
+                  </div>
 
-                    {/* ROLES */}
-                    <div className="mb-5 flex flex-wrap gap-3">
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    {member.roles?.map(
+                      (role) => (
+                        <span
+                          key={role}
+                          className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-100"
+                        >
+                          {role.replaceAll(
+                            "-",
+                            " "
+                          )}
+                        </span>
+                      )
+                    )}
+                  </div>
 
-                      {
-                        member.roles?.map(
-                          (role) => (
-
-                            <span
-                              key={role}
-                              className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300"
-                            >
-
-                              {role}
-
-                            </span>
-                          )
-                        )
-                      }
-
-                    </div>
-
-                    {/* STATUS */}
-                    <div className="flex items-center justify-between">
-
-                      <span className="rounded-full bg-purple-500/10 px-4 py-2 text-sm text-purple-300">
-
+                  <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-400">
+                    {member.team?.name && (
+                      <span>
+                        Team:
+                        {" "}
+                        <span className="text-slate-200">
+                          {
+                            member.team
+                              .name
+                          }
+                        </span>
+                      </span>
+                    )}
+                    <span>
+                      Status:
+                      {" "}
+                      <span className="text-slate-200">
                         {
                           member.project
                             ?.status
                         }
-
                       </span>
-
-                      <span className="text-sm text-slate-400">
-
-                        Open Workspace →
-
-                      </span>
-
-                    </div>
-
-                  </Link>
-                )
+                    </span>
+                  </div>
+                </Link>
               )
-            }
-
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="rounded-3xl border border-dashed border-white/10 bg-[#07101c] p-10 text-center">
+            <h3 className="text-2xl font-bold">
+              No project assignment yet
+            </h3>
+            <p className="mx-auto mt-3 max-w-2xl text-slate-400">
+              That is normal at this stage. Your registration stays active while the organizing team studies strengths, preferences, and team balance.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,602 +1,228 @@
-// src/pages/ProjectDetails.jsx
-
 import {
   useEffect,
   useState,
 } from "react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Layers3,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import {
+  Link,
+  useParams,
+} from "react-router-dom";
 
 import API from "../services/api";
 
-import {
-  useParams,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
-
-import {
-  Users,
-  Layers3,
-  CalendarDays,
-  X,
-} from "lucide-react";
-
-const roleOptions = [
-  "frontend-developer",
-  "backend-developer",
-  "ai-ml-engineer",
-  "ui-ux-designer",
-];
-
 const ProjectDetails = () => {
-
-  const { id } =
-    useParams();
-
-  const navigate =
-    useNavigate();
-
-  const location =
-    useLocation();
-
-  const [project,
-    setProject] =
+  const { id } = useParams();
+  const [project, setProject] =
     useState(null);
 
-  const [members,
-      setMembers] =
-      useState([]);
-
-  const [showModal,
-    setShowModal] =
-    useState(false);
-
-    const [joining,
-    setJoining] =
-    useState(false);
-
- const [selectedRoles,
-  setSelectedRoles] =
-  useState([]);
-
   useEffect(() => {
-
-    fetchProject();
-    fetchMembers();
-
-  }, []);
-
-  const fetchProject =
-    async () => {
-
+    async function fetchProject() {
       try {
-
         const response =
           await API.get(
             `/projects/${id}`
           );
-
-        setProject(
-          response.data
-        );
-
+        setProject(response.data);
       } catch (error) {
-
-        console.log(
-          error.response?.data
-          || error.message
+        console.error(
+          error.response?.data ||
+            error.message
         );
-
       }
-  };
-
-  // OPEN JOIN FLOW
-  const handleJoinClick =
-    () => {
-
-      const token =
-        localStorage.getItem(
-          "user_token"
-        );
-
-      // NOT LOGGED IN
-      if (!token) {
-
-        navigate(
-          "/login",
-          {
-            state: {
-              from:
-                location.pathname,
-            },
-          }
-        );
-
-        return;
-      }
-
-      setShowModal(true);
-    };
-
-// fetch Members
-    const fetchMembers =
-      async () => {
-
-        try {
-
-          const response =
-            await API.get(
-              `/project-members/${id}`
-            );
-
-          setMembers(
-            response.data
-          );
-
-        } catch (error) {
-
-          console.log(error);
-
-        }
-    };
-
-  // JOIN PROJECT
-//   const joinProject =
-//   async () => {
-
-//     try {
-
-//       console.log(
-//         selectedRoles
-//       );
-
-//       await API.post(
-//         "/project-members/join",
-//         {
-//           projectId:
-//             project._id,
-
-//           roles:
-//             selectedRoles,
-//         }
-//       );
-
-//       alert(
-//         "Joined Successfully"
-//       );
-
-//       setShowModal(false);
-
-//     } catch (error) {
-
-//       console.log(
-//         error.response?.data
-//       );
-
-//       alert(
-//         error.response?.data
-//           ?.message
-//         || "Join failed"
-//       );
-
-//     }
-// };
-
-
-const joinProject =
-  async () => {
-
-    // PREVENT DOUBLE CLICK
-    if (joining) return;
-
-    try {
-
-      setJoining(true);
-
-      await API.post(
-        "/project-members/join",
-        {
-          projectId:
-            project._id,
-
-          roles:
-            selectedRoles,
-        }
-      );
-
-      alert(
-        "Joined Successfully"
-      );
-
-      fetchMembers();
-
-      setShowModal(false);
-
-    } catch (error) {
-
-      console.log(
-        error.response?.data
-      );
-
-      alert(
-        error.response?.data
-          ?.message
-        || "Join failed"
-      );
-
-    } finally {
-
-      setJoining(false);
     }
-};
+
+    fetchProject();
+  }, [id]);
 
   if (!project) {
-
     return (
       <div className="p-10 text-white">
-
-        Loading...
-
+        Loading project...
       </div>
     );
   }
 
-
   return (
     <div className="min-h-screen bg-[#050816] px-4 py-14 text-white sm:px-6 lg:px-10">
-
-      {/* TOP */}
-      <div className="mb-10">
-
-        <div className="mb-4 flex flex-wrap gap-3">
-
-          <span className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300">
-
+      <div className="mb-10 rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl lg:p-10">
+        <div className="mb-5 flex flex-wrap gap-3">
+          <span className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-100">
             {project.domain}
-
           </span>
-
-          <span className="rounded-full bg-purple-500/10 px-4 py-2 text-sm text-purple-300">
-
+          <span className="rounded-full bg-fuchsia-500/10 px-4 py-2 text-sm text-fuchsia-100">
             {project.session}
-
           </span>
-
+          <span
+            className={`rounded-full px-4 py-2 text-sm ${
+              project.isShowcase
+                ? "bg-yellow-500/10 text-yellow-100"
+                : "bg-emerald-500/10 text-emerald-100"
+            }`}
+          >
+            {project.isShowcase
+              ? "Showcase Project"
+              : "Assignment-ready Project"}
+          </span>
         </div>
 
-        <h1 className="mb-5 text-5xl font-black">
-
+        <h1 className="text-5xl font-black leading-tight">
           {project.title}
-
         </h1>
 
-        <p className="max-w-4xl text-lg text-slate-400">
-
+        <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">
           {project.description}
-
         </p>
-
       </div>
 
-      {/* INFO */}
       <div className="mb-10 grid gap-6 md:grid-cols-3">
+        {[
+          {
+            icon: Users,
+            label:
+              "Projected squad size",
+            value: `${project.activeMembers}/${project.maxMembers}`,
+            text:
+              "This shows the current occupancy against intended capacity.",
+          },
+          {
+            icon: Layers3,
+            label: "Project mode",
+            value: project.isShowcase
+              ? "Public preview"
+              : "Internal build track",
+            text:
+              "Participants do not join directly. Admins assign members after review.",
+          },
+          {
+            icon: CalendarDays,
+            label: "Season",
+            value:
+              project.season ||
+              "To be announced",
+            text:
+              "Use this as a sense of timing rather than a guarantee of direct enrollment.",
+          },
+        ].map((item) => {
+          const Icon = item.icon;
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-
-          <Users
-            className="mb-4 text-cyan-400"
-            size={28}
-          />
-
-          <h2 className="text-3xl font-black">
-
-            {project.maxMembers}
-
-          </h2>
-
-          <p className="mt-2 text-slate-400">
-
-            Max Members
-
-          </p>
-
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-
-          <Layers3
-            className="mb-4 text-purple-400"
-            size={28}
-          />
-
-          <h2 className="text-2xl font-black">
-
-            {project.status}
-
-          </h2>
-
-          <p className="mt-2 text-slate-400">
-
-            Project Status
-
-          </p>
-
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-
-          <CalendarDays
-            className="mb-4 text-yellow-400"
-            size={28}
-          />
-
-          <h2 className="text-2xl font-black">
-
-            {project.season}
-
-          </h2>
-
-          <p className="mt-2 text-slate-400">
-
-            Season
-
-          </p>
-
-        </div>
-
+          return (
+            <div
+              key={item.label}
+              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+            >
+              <Icon
+                className="mb-4 text-cyan-300"
+                size={26}
+              />
+              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
+                {item.label}
+              </p>
+              <h2 className="mt-3 text-2xl font-black">
+                {item.value}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                {item.text}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
-      {/* TECH STACK */}
-      <div className="mb-12">
-
-        <h2 className="mb-6 text-3xl font-black">
-
-          Tech Stack
-
-        </h2>
-
-        <div className="flex flex-wrap gap-4">
-
-          {
-            project.techStack?.map(
+      <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr]">
+        <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8">
+          <h2 className="text-3xl font-black">
+            Tech stack and signals
+          </h2>
+          <div className="mt-6 flex flex-wrap gap-3">
+            {project.techStack?.map(
               (tech) => (
-
                 <span
                   key={tech}
-                  className="rounded-full bg-white/5 px-5 py-3 text-slate-300"
+                  className="rounded-full bg-[#081121] px-4 py-3 text-sm text-slate-200"
                 >
-
                   {tech}
-
                 </span>
               )
-            )
-          }
-
-        </div>
-
-      </div>
-
-      {/* TEAM */}
-        <div className="mb-12">
-
-          <h2 className="mb-6 text-3xl font-black">
-
-            Team Members
-
-          </h2>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-
-            {
-              members.map(
-                (member) => (
-
-                  <div
-                    key={member._id}
-                    className="rounded-3xl border border-white/10 bg-white/5 p-6"
-                  >
-
-                    {/* NAME */}
-                    <div className="mb-4 flex items-center justify-between">
-
-                      <div>
-
-                        <h3 className="text-2xl font-bold">
-
-                          {
-                            member.user
-                              ?.name
-                          }
-
-                        </h3>
-
-                        <p className="mt-1 text-slate-400">
-
-                          {
-                            member.user
-                              ?.email
-                          }
-
-                        </p>
-
-                      </div>
-
-                      {
-                        member.isLeader && (
-
-                          <div className="rounded-full bg-green-500/10 px-4 py-2 text-sm text-green-300">
-
-                            Team Leader
-
-                          </div>
-                        )
-                      }
-
-                    </div>
-
-                    {/* ROLES */}
-                    <div className="flex flex-wrap gap-3">
-
-                      {
-                        member.roles?.map(
-                          (role) => (
-
-                            <span
-                              key={role}
-                              className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300"
-                            >
-
-                              {role}
-
-                            </span>
-                          )
-                        )
-                      }
-
-                    </div>
-
-                  </div>
-                )
-              )
-            }
-
+            )}
           </div>
 
-        </div>
-
-      {/* JOIN BUTTON */}
-      {
-        project.status ===
-        "active" ? (
-
-          <button
-            onClick={
-              handleJoinClick
-            }
-            className="rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-10 py-5 text-lg font-bold"
-          >
-
-            Join Project
-
-          </button>
-
-        ) : (
-
-          <div className="inline-flex rounded-2xl bg-yellow-500/10 px-6 py-4 text-yellow-300">
-
-            Project is currently {project.status}
-
-          </div>
-        )
-      }
-
-      {/* MODAL */}
-      {
-        showModal && (
-
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-
-            <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#0b1120] p-8">
-
-              {/* TOP */}
-              <div className="mb-8 flex items-center justify-between">
-
-                <h2 className="text-3xl font-black">
-
-                  Select Role
-
-                </h2>
-
-                <button
-                  onClick={() =>
-                    setShowModal(
-                      false
-                    )
-                  }
-                >
-
-                  <X size={24} />
-
-                </button>
-
+          {project.highlights?.length >
+            0 && (
+            <>
+              <h3 className="mt-8 text-xl font-bold">
+                Why this track feels exciting
+              </h3>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {project.highlights.map(
+                  (highlight) => (
+                    <div
+                      key={highlight}
+                      className="rounded-2xl border border-white/10 bg-[#07101c] p-4 text-sm leading-6 text-slate-300"
+                    >
+                      {highlight}
+                    </div>
+                  )
+                )}
               </div>
+            </>
+          )}
+        </div>
 
-              {/* ROLE */}
-                <div className="mb-8 space-y-4">
-
-                {
-                    roleOptions.map(
-                    (role) => (
-
-                        <label
-                        key={role}
-                        className="flex items-center gap-4 rounded-2xl border border-white/10 bg-[#050816] p-4"
-                        >
-
-                        <input
-                            type="checkbox"
-                            checked={
-                            selectedRoles.includes(
-                                role
-                            )
-                            }
-                            onChange={(e) => {
-
-                            if (
-                                e.target.checked
-                            ) {
-
-                                setSelectedRoles([
-                                ...selectedRoles,
-                                role,
-                                ]);
-
-                            } else {
-
-                                setSelectedRoles(
-                                selectedRoles.filter(
-                                    (r) =>
-                                    r !== role
-                                )
-                                );
-                            }
-                            }}
-                        />
-
-                        <span>
-
-                            {role}
-
-                        </span>
-
-                        </label>
-                    )
-                    )
-                }
-                </div>
-
-              {/* BUTTON */}
-              <button
-                onClick={
-                  joinProject
-                }
-                disabled={
-                  selectedRoles.length === 0
-                  || joining
-                }
-                className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-6 py-4 font-bold disabled:opacity-50"
-              >
-
-                Confirm Join
-
-              </button>
-
+        <div className="space-y-6">
+          <div className="rounded-[2rem] border border-cyan-500/20 bg-cyan-500/[0.08] p-8">
+            <div className="flex items-center gap-3">
+              <Sparkles
+                className="text-cyan-300"
+                size={22}
+              />
+              <h2 className="text-2xl font-black text-cyan-100">
+                How selection works here
+              </h2>
             </div>
-
+            <div className="mt-6 space-y-4 text-sm leading-7 text-slate-200">
+              <p>
+                1. You register once with your real skills, interests, and availability.
+              </p>
+              <p>
+                2. The organizers review all registrations and balance teams fairly.
+              </p>
+              <p>
+                3. Final project and team assignment appears later in your dashboard.
+              </p>
+            </div>
           </div>
-        )
-      }
 
+          <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8">
+            <h2 className="text-2xl font-black">
+              Interested in work like this?
+            </h2>
+            <p className="mt-4 text-slate-400">
+              Register with honest preferences and the organizing team will match you to the right track later.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-4">
+              <Link
+                to="/register"
+                className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-6 py-4 font-bold"
+              >
+                Register now
+                <ArrowRight size={18} />
+              </Link>
+              <Link
+                to="/projects"
+                className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-slate-100 transition hover:border-cyan-400/30"
+              >
+                Back to showcase
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
