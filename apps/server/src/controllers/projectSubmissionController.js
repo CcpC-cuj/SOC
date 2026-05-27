@@ -1,165 +1,150 @@
-import ProjectSubmission from "../models/ProjectSubmission.js";
-import ProjectMember from "../models/ProjectMember.js";
 import Project from "../models/Project.js";
+import ProjectMember from "../models/ProjectMember.js";
+import ProjectSubmission from "../models/ProjectSubmission.js";
 
-// CREATE / UPDATE SUBMISSION
-export const submitProject =
-  async (req, res) => {
+const assertProjectAccess = async (
+  req,
+  projectId
+) => {
+  if (req.user.authority === "admin") {
+    return true;
+  }
 
-    try {
+  const membership =
+    await ProjectMember.findOne({
+      user: req.user._id,
+      project: projectId,
+      status: "active",
+    });
 
-      const {
-        projectId,
-        githubRepo,
-        deploymentLink,
-        pptLink,
-        demoVideo,
-        documentation,
-      } = req.body;
-
-      // LEADER CHECK
-      const isLeader =
-        await ProjectMember.findOne({
-          user: req.user._id,
-
-          project: projectId,
-
-          isLeader: true,
-        });
-
-      if (!isLeader) {
-
-        return res.status(403)
-          .json({
-            message:
-              "Leader only",
-          });
-      }
-
-      // CHECK PROJECT
-            const project =
-            await Project.findById(
-                projectId
-            );
-
-            // PROJECT COMPLETED
-            if (
-            project.status
-            === "completed"
-            ) {
-
-            return res.status(400)
-                .json({
-                message:
-                    "Project already completed",
-                });
-            }
-
-      // CHECK EXISTING
-      let submission =
-        await ProjectSubmission.findOne({
-          project: projectId,
-        });
-
-      // UPDATE
-      if (submission) {
-
-        submission.githubRepo =
-          githubRepo;
-
-        submission.deploymentLink =
-          deploymentLink;
-
-        submission.pptLink =
-          pptLink;
-
-        submission.demoVideo =
-          demoVideo;
-
-        submission.documentation =
-          documentation;
-
-        submission.status =
-          "submitted";
-
-        await submission.save();
-      }
-
-      // CREATE
-      else {
-
-        submission =
-          await ProjectSubmission.create({
-            project:
-              projectId,
-
-            submittedBy:
-              req.user._id,
-
-            githubRepo,
-
-            deploymentLink,
-
-            pptLink,
-
-            demoVideo,
-
-            documentation,
-
-            status:
-              "submitted",
-          });
-      }
-
-      res.json(submission);
-
-    } catch (error) {
-
-      res.status(500)
-        .json({
-          message:
-            error.message,
-        });
-
-    }
+  return Boolean(membership);
 };
 
-// GET PROJECT SUBMISSION
+export const submitProject = async (
+  req,
+  res
+) => {
+  try {
+    const {
+      projectId,
+      githubRepo,
+      deploymentLink,
+      pptLink,
+      demoVideo,
+      documentation,
+    } = req.body;
+
+    const isLeader =
+      await ProjectMember.findOne({
+        user: req.user._id,
+        project: projectId,
+        isLeader: true,
+        status: "active",
+      });
+
+    if (!isLeader) {
+      return res.status(403).json({
+        message: "Leader only",
+      });
+    }
+
+    const project =
+      await Project.findById(
+        projectId
+      );
+
+    if (!project) {
+      return res.status(404).json({
+        message: "Project not found",
+      });
+    }
+
+    if (project.status === "completed") {
+      return res.status(400).json({
+        message:
+          "Project already completed",
+      });
+    }
+
+    let submission =
+      await ProjectSubmission.findOne({
+        project: projectId,
+      });
+
+    if (submission) {
+      submission.githubRepo =
+        githubRepo;
+      submission.deploymentLink =
+        deploymentLink;
+      submission.pptLink = pptLink;
+      submission.demoVideo =
+        demoVideo;
+      submission.documentation =
+        documentation;
+      submission.status =
+        "submitted";
+
+      await submission.save();
+    } else {
+      submission =
+        await ProjectSubmission.create({
+          project: projectId,
+          submittedBy: req.user._id,
+          githubRepo,
+          deploymentLink,
+          pptLink,
+          demoVideo,
+          documentation,
+          status: "submitted",
+        });
+    }
+
+    return res.json(submission);
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 export const getProjectSubmission =
   async (req, res) => {
-
     try {
+      const {
+        projectId,
+      } = req.params;
+
+      const allowed =
+        await assertProjectAccess(
+          req,
+          projectId
+        );
+
+      if (!allowed) {
+        return res.status(403).json({
+          message: "Access denied",
+        });
+      }
 
       const submission =
         await ProjectSubmission.findOne({
-          project:
-            req.params.projectId,
-        })
-        .populate(
+          project: projectId,
+        }).populate(
           "submittedBy",
           "name email"
         );
 
-      res.json(submission);
-
+      return res.json(submission);
     } catch (error) {
-
-      res.status(500)
-        .json({
-          message:
-            error.message,
-        });
-
+      return res.status(500).json({
+        message: error.message,
+      });
     }
-};
+  };
 
-
-// REVIEW SUBMISSION
 export const reviewSubmission =
   async (req, res) => {
-
     try {
-
       const {
         status,
         remarks,
@@ -171,91 +156,65 @@ export const reviewSubmission =
         );
 
       if (!submission) {
-
-        return res.status(404)
-          .json({
-            message:
-              "Submission not found",
-          });
+        return res.status(404).json({
+          message:
+            "Submission not found",
+        });
       }
 
-      // UPDATE SUBMISSION
-      submission.status =
-        status;
-
-      submission.remarks =
-        remarks;
+      submission.status = status;
+      submission.remarks = remarks;
 
       await submission.save();
 
-      // UPDATE PROJECT
       const project =
         await Project.findById(
           submission.project
         );
 
-      // APPROVED
-      if (
-        status === "approved"
-      ) {
-
+      if (status === "approved") {
         project.status =
           "completed";
-      }
-
-      // REJECTED
-      else if (
+      } else if (
         status === "rejected"
       ) {
-
-        project.status =
-          "active";
+        project.status = "active";
       }
 
       await project.save();
 
-      res.json({
+      return res.json({
         submission,
         project,
       });
-
     } catch (error) {
-
-      res.status(500)
-        .json({
-          message:
-            error.message,
-        });
-
+      return res.status(500).json({
+        message: error.message,
+      });
     }
-};
+  };
 
-// GET ALL SUBMISSIONS
 export const getAllSubmissions =
   async (req, res) => {
-
     try {
-
       const submissions =
         await ProjectSubmission.find()
-        .populate(
-          "project",
-          "title"
-        )
-        .populate(
-          "submittedBy",
-          "name email"
-        );
+          .populate(
+            "project",
+            "title"
+          )
+          .populate(
+            "submittedBy",
+            "name email"
+          )
+          .sort({
+            createdAt: -1,
+          });
 
-      res.json(submissions);
-
+      return res.json(submissions);
     } catch (error) {
-
-      res.status(500)
-        .json({
-          message:
-            error.message,
-        });
-
+      return res.status(500).json({
+        message: error.message,
+      });
     }
-};
+  };

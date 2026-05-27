@@ -1,139 +1,118 @@
-// src/controllers/dashboardController.js
-
+import Project from "../models/Project.js";
+import ProjectMember from "../models/ProjectMember.js";
+import Task from "../models/Task.js";
 import User from "../models/User.js";
 
-import ProjectMember
-from "../models/ProjectMember.js";
+export const getDashboard = async (
+  req,
+  res
+) => {
+  try {
+    const user =
+      await User.findById(
+        req.user._id
+      ).select("-password");
 
-import Project
-from "../models/Project.js";
-
-import Task
-from "../models/Task.js";
-
-
-export const getDashboard =
-  async (req, res) => {
-
-    try {
-
-      // USER
-      const user =
-        await User.findById(
-          req.user._id
-        ).select("-password");
-
-      // PROJECT MEMBERSHIPS
-      const memberships =
-        await ProjectMember.find({
-          user: req.user._id,
-        })
-        .populate("project");
-
-      // TASKS
-      const tasks =
-        await Task.find({
-          assignedTo:
-            req.user._id,
-        })
+    const memberships =
+      await ProjectMember.find({
+        user: req.user._id,
+        status: "active",
+      })
+        .populate("project")
         .populate(
-          "project",
-          "title"
+          "team",
+          "name focus capacity"
         );
 
-      // ANALYTICS
-      const analytics = {
+    const tasks = await Task.find({
+      assignedTo: req.user._id,
+    }).populate(
+      "project",
+      "title"
+    );
 
-        totalProjects:
-          memberships.length,
+    const analytics = {
+      totalProjects:
+        memberships.length,
+      totalTasks: tasks.length,
+      pendingTasks:
+        tasks.filter(
+          (task) =>
+            task.status === "pending"
+        ).length,
+      submittedTasks:
+        tasks.filter(
+          (task) =>
+            task.status === "submitted"
+        ).length,
+      approvedTasks:
+        tasks.filter(
+          (task) =>
+            task.status === "approved"
+        ).length,
+    };
 
-        totalTasks:
-          tasks.length,
-
-        pendingTasks:
-          tasks.filter(
-            (task) =>
-              task.status ===
-              "pending"
-          ).length,
-
-        submittedTasks:
-          tasks.filter(
-            (task) =>
-              task.status ===
-              "submitted"
-          ).length,
-
-        approvedTasks:
-          tasks.filter(
-            (task) =>
-              task.status ===
-              "approved"
-          ).length,
-      };
-
-      res.json({
-        user,
-
-        memberships,
-
-        tasks,
-
-        analytics,
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
-      });
-
-    }
+    return res.json({
+      user,
+      memberships,
+      tasks,
+      analytics,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
 };
 
-
-// =====================================
-// ADMIN DASHBOARD
-// =====================================
 export const getAdminDashboard =
   async (req, res) => {
-
     try {
-
-      // TOTAL PROJECTS
-      const totalProjects =
-        await Project.countDocuments();
-
-      // TOTAL USERS
-      const totalUsers =
-        await User.countDocuments({
-          authority: "user",
-        });
-
-      // TOTAL TASKS
-      const totalTasks =
-        await Task.countDocuments();
-
-      // TOTAL LEADERS
-      const totalLeaders =
-        await ProjectMember.countDocuments({
-          isLeader: true,
-        });
-
-      res.json({
+      const [
         totalProjects,
         totalUsers,
         totalTasks,
         totalLeaders,
-      });
+        pendingReview,
+        assignedUsers,
+        showcaseProjects,
+      ] = await Promise.all([
+        Project.countDocuments(),
+        User.countDocuments({
+          authority: "user",
+        }),
+        Task.countDocuments(),
+        ProjectMember.countDocuments({
+          isLeader: true,
+          status: "active",
+        }),
+        User.countDocuments({
+          authority: "user",
+          registrationStatus:
+            "pending_review",
+        }),
+        User.countDocuments({
+          authority: "user",
+          registrationStatus:
+            "assigned",
+        }),
+        Project.countDocuments({
+          isShowcase: true,
+        }),
+      ]);
 
+      return res.json({
+        totalProjects,
+        totalUsers,
+        totalTasks,
+        totalLeaders,
+        pendingReview,
+        assignedUsers,
+        showcaseProjects,
+      });
     } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
+      return res.status(500).json({
+        message: error.message,
       });
-
     }
-};
+  };
