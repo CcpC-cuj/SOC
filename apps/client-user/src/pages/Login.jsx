@@ -353,7 +353,7 @@ const handleSubmit = async (e) => {
             </button>
 
             {/* DIVIDER */}
-            <div className="relative py-4">
+            {/* <div className="relative py-4">
 
               <div className="absolute left-0 top-1/2 h-px w-full bg-white/10" />
 
@@ -361,10 +361,10 @@ const handleSubmit = async (e) => {
                 OR CONTINUE WITH
               </span>
 
-            </div>
+            </div> */}
 
             {/* GITHUB LOGIN */}
-            <button
+            {/* <button
               type="button"
               className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-8 py-4 font-semibold transition hover:bg-white/10"
             >
@@ -373,7 +373,7 @@ const handleSubmit = async (e) => {
 
               Continue with GitHub
 
-            </button>
+            </button> */}
 
           </form>
 
