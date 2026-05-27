@@ -1,34 +1,37 @@
 import express from "express";
 
 import {
-  joinProject,
-  getProjectMembers,
   assignLeader,
+  assignMemberToProject,
+  getProjectMembers,
+  joinProject,
 } from "../controllers/projectMemberController.js";
-
 import {
-  protect,
   adminOnly,
+  protect,
 } from "../middleware/authMiddleware.js";
 
-const router =
-  express.Router();
+const router = express.Router();
 
-// JOIN PROJECT
 router.post(
   "/join",
   protect,
   joinProject
 );
 
-// GET MEMBERS
+router.post(
+  "/assign",
+  protect,
+  adminOnly,
+  assignMemberToProject
+);
+
 router.get(
   "/:projectId",
   protect,
   getProjectMembers
 );
 
-// ASSIGN LEADER
 router.post(
   "/assign-leader",
   protect,

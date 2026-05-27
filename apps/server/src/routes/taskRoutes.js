@@ -1,39 +1,50 @@
-import express
-from "express";
+import express from "express";
 
 import {
+  approveTask,
   createTask,
+  getAllTasks,
+  getMyTasks,
   getProjectTasks,
   updateTaskStatus,
-  getMyTasks,
 } from "../controllers/taskController.js";
-
 import {
+  adminOnly,
   protect,
 } from "../middleware/authMiddleware.js";
 
-const router =
-  express.Router();
+const router = express.Router();
 
-// CREATE TASK
+router.get(
+  "/",
+  protect,
+  adminOnly,
+  getAllTasks
+);
+
 router.post(
   "/",
   protect,
   createTask
 );
 
-// GET PROJECT TASKS
 router.get(
   "/project/:projectId",
   protect,
   getProjectTasks
 );
 
-// UPDATE TASK STATUS
 router.put(
   "/:id/status",
   protect,
   updateTaskStatus
+);
+
+router.put(
+  "/:id/approve",
+  protect,
+  adminOnly,
+  approveTask
 );
 
 router.get(

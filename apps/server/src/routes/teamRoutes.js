@@ -1,28 +1,46 @@
 import express from "express";
 
 import {
-  getTeams,
   assignLeader,
+  createTeam,
+  getTeams,
+  updateTeam,
 } from "../controllers/teamController.js";
-
 import {
+  adminOnly,
   protect,
 } from "../middleware/authMiddleware.js";
 
-import {
-  adminOnly,
-} from "../middleware/roleMiddleware.js";
+const router = express.Router();
 
-const router =
-  express.Router();
-
-// GET ALL TEAMS
 router.get(
   "/",
+  protect,
+  adminOnly,
   getTeams
 );
 
-// ASSIGN LEADER
+router.get(
+  "/project/:projectId",
+  protect,
+  adminOnly,
+  getTeams
+);
+
+router.post(
+  "/",
+  protect,
+  adminOnly,
+  createTeam
+);
+
+router.put(
+  "/:id",
+  protect,
+  adminOnly,
+  updateTeam
+);
+
 router.put(
   "/assign-leader",
   protect,
