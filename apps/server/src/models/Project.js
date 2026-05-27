@@ -1,83 +1,81 @@
-// src/models/Project.js
-
 import mongoose from "mongoose";
 
-const projectSchema =
-  new mongoose.Schema(
-    {
-      title: {
-        type: String,
-        required: true,
-      },
+import { DOMAIN_OPTIONS } from "../constants/registration.js";
 
-      description: {
-        type: String,
-        required: true,
-      },
-
-      session: {
-        type: String,
-        required: true,
-      },
-
-      season: {
-        type: String,
-
-        enum: [
-          "Summer",
-          "Winter",
-        ],
-      },
-
-      domain: {
-        type: String,
-
-        enum: [
-          "Frontend",
-          "Backend",
-          "AI/ML",
-          "UI/UX",
-          "Cyber Security",
-        ],
-      },
-
-      techStack: [String],
-
-      createdBy: {
-        type:
-          mongoose.Schema.Types.ObjectId,
-
-        ref: "User",
-      },
-
-      maxMembers: {
-        type: Number,
-        default: 10,
-      },
-
-      status: {
-        type: String,
-
-        enum: [
-          "upcoming",
-          "active",
-          "completed",
-          "closed",
-        ],
-
-        default: "upcoming",
-      },
-
-      startDate: Date,
-
-      endDate: Date,
+const projectSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    {
-      timestamps: true,
-    }
-  );
 
-export default mongoose.model(
-  "Project",
-  projectSchema
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    session: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    season: {
+      type: String,
+      enum: ["Summer", "Winter"],
+    },
+
+    domain: {
+      type: String,
+      enum: DOMAIN_OPTIONS,
+    },
+
+    techStack: {
+      type: [String],
+      default: [],
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    maxMembers: {
+      type: Number,
+      default: 10,
+      min: 1,
+    },
+
+    status: {
+      type: String,
+      enum: ["upcoming", "active", "completed", "closed"],
+      default: "upcoming",
+    },
+
+    isShowcase: {
+      type: Boolean,
+      default: false,
+    },
+
+    acceptingAssignments: {
+      type: Boolean,
+      default: true,
+    },
+
+    highlights: {
+      type: [String],
+      default: [],
+    },
+
+    startDate: Date,
+
+    endDate: Date,
+  },
+  {
+    timestamps: true,
+  }
 );
+
+export default mongoose.model("Project", projectSchema);
