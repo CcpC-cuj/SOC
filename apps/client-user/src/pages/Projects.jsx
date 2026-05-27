@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useMemo,
   useState,
 } from "react";
 import { motion } from "framer-motion";
@@ -41,17 +40,14 @@ const Projects = () => {
     fetchProjects();
   }, []);
 
-  const filteredProjects = useMemo(
-    () =>
-      selectedDomain === "All"
-        ? projects
-        : projects.filter(
-            (project) =>
-              project.domain ===
-              selectedDomain
-          ),
-    [projects, selectedDomain]
-  );
+  const filteredProjects =
+    selectedDomain === "All"
+      ? projects
+      : projects.filter(
+          (project) =>
+            project.domain ===
+            selectedDomain
+        );
 
   return (
     <div className="min-h-screen bg-[#050816] px-4 py-16 text-white sm:px-6 lg:px-10">

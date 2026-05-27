@@ -8,6 +8,9 @@ import {
   REGISTRATION_STATUSES,
   ROLE_OPTIONS,
 } from "../constants/registration.js";
+import {
+  sendTransactionalEmail,
+} from "../utils/emailService.js";
 
 const sanitizeArray = (
   values = [],
@@ -40,6 +43,16 @@ const appendHistoryEntry = (
     changedAt: new Date(),
   });
 };
+
+const escapeHtml = (
+  value = ""
+) =>
+  String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 
 export const getUsers = async (
   req,
@@ -233,6 +246,117 @@ export const exportUsersCsv = async (
     });
   }
 };
+
+export const sendAnnouncement =
+  async (req, res) => {
+    try {
+      const subject = String(
+        req.body.subject || ""
+      ).trim();
+      const message = String(
+        req.body.message || ""
+      ).trim();
+      const recipientIds =
+        Array.isArray(
+          req.body.recipientIds
+        )
+          ? req.body.recipientIds
+              .map((value) =>
+                String(value).trim()
+              )
+              .filter(Boolean)
+          : [];
+
+      if (!subject || !message) {
+        return res.status(400).json({
+          message:
+            "Subject and message are required.",
+        });
+      }
+
+      if (recipientIds.length === 0) {
+        return res.status(400).json({
+          message:
+            "Choose at least one recipient.",
+        });
+      }
+
+      const recipients =
+        await User.find({
+          _id: {
+            $in: recipientIds,
+          },
+          authority: "user",
+        }).select("name email");
+
+      if (recipients.length === 0) {
+        return res.status(404).json({
+          message:
+            "No matching recipients found.",
+        });
+      }
+
+      const htmlMessage =
+        escapeHtml(message).replaceAll(
+          "\n",
+          "<br />"
+        );
+
+      const deliveries =
+        await Promise.allSettled(
+          recipients.map((user) =>
+            sendTransactionalEmail({
+              to: user.email,
+              subject,
+              text:
+                `Hi ${user.name},\n\n${message}\n\n- Seasons of Code`,
+              html:
+                `<p>Hi ${escapeHtml(user.name)},</p><p>${htmlMessage}</p><p>- Seasons of Code</p>`,
+            })
+          )
+        );
+
+      const deliveredCount =
+        deliveries.filter(
+          (delivery) =>
+            delivery.status ===
+              "fulfilled" &&
+            delivery.value.delivered
+        ).length;
+
+      const skippedCount =
+        deliveries.filter(
+          (delivery) =>
+            delivery.status ===
+              "fulfilled" &&
+            !delivery.value.delivered
+        ).length;
+
+      const failedCount =
+        deliveries.filter(
+          (delivery) =>
+            delivery.status ===
+            "rejected"
+        ).length;
+
+      return res.json({
+        success: true,
+        message:
+          deliveredCount > 0
+            ? "Announcement sent to the selected participants."
+            : "Announcement prepared, but email delivery is not configured yet.",
+        recipientCount:
+          recipients.length,
+        deliveredCount,
+        skippedCount,
+        failedCount,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
+      });
+    }
+  };
 
 export const deleteUser = async (
   req,

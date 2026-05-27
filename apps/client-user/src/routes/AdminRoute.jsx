@@ -1,4 +1,7 @@
-import { Navigate } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 
 import {
   getAdminToken,
@@ -8,6 +11,8 @@ import {
 const AdminRoute = ({
   children,
 }) => {
+  const location =
+    useLocation();
   const token = getAdminToken();
   const user = getStoredAdmin();
 
@@ -16,6 +21,10 @@ const AdminRoute = ({
       <Navigate
         to="/login"
         replace
+        state={{
+          from:
+            location.pathname,
+        }}
       />
     );
   }

@@ -32,9 +32,15 @@ const Leaders = () => {
           );
         setProjects(response.data);
 
-        if (response.data[0]?._id) {
+        const firstRealProject =
+          response.data.find(
+            (project) =>
+              !project.isShowcase
+          );
+
+        if (firstRealProject?._id) {
           setSelectedProject(
-            response.data[0]._id
+            firstRealProject._id
           );
         }
       } catch (error) {

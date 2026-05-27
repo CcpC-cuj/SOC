@@ -138,6 +138,18 @@ export const assignLeader = async (
       });
     }
 
+    if (team.leader) {
+      await ProjectMember.updateMany(
+        {
+          project: team.project,
+          user: team.leader,
+        },
+        {
+          isLeader: false,
+        }
+      );
+    }
+
     const membership =
       await ProjectMember.findOne({
         project: team.project,

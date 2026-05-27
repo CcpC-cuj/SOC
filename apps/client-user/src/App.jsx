@@ -11,6 +11,8 @@ import {
   clearAdminSession,
   getAdminToken,
   getUserToken,
+  setAdminSession,
+  setUserSession,
 } from "./services/authStorage";
 
 import MainLayout from "./layouts/MainLayout";
@@ -18,6 +20,9 @@ import AdminLayout from "./layouts/AdminLayout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Projects from "./pages/Projects";
@@ -46,12 +51,22 @@ const App = () => {
 
       try {
         if (adminToken) {
-          await AdminAPI.get(
-            "/auth/verify"
+          const response =
+            await AdminAPI.get(
+              "/auth/verify"
+            );
+          setAdminSession(
+            adminToken,
+            response.data.user
           );
         } else {
-          await API.get(
-            "/auth/verify"
+          const response =
+            await API.get(
+              "/auth/verify"
+            );
+          setUserSession(
+            userToken,
+            response.data.user
           );
         }
       } catch {
@@ -91,6 +106,33 @@ const App = () => {
         element={
           <MainLayout>
             <Register />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/forgot-password"
+        element={
+          <MainLayout>
+            <ForgotPassword />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/reset-password"
+        element={
+          <MainLayout>
+            <ResetPassword />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/verify-email"
+        element={
+          <MainLayout>
+            <VerifyEmail />
           </MainLayout>
         }
       />

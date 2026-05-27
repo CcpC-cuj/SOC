@@ -6,6 +6,7 @@ import {
   getMyProfile,
   getProfileDashboard,
   getUsers,
+  sendAnnouncement,
   updateProfile,
   updateRegistrationReview,
 } from "../controllers/userController.js";
@@ -28,6 +29,13 @@ router.get(
   protect,
   adminOnly,
   exportUsersCsv
+);
+
+router.post(
+  "/announce",
+  protect,
+  adminOnly,
+  sendAnnouncement
 );
 
 router.put(

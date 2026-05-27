@@ -3,8 +3,12 @@
 import express from "express";
 
 import {
+  forgotPassword,
   registerUser,
   loginUser,
+  resendVerificationEmail,
+  resetPassword,
+  verifyEmailAddress,
   verifyToken,
 } from "../controllers/authController.js";
 
@@ -22,6 +26,26 @@ router.post(
 router.post(
   "/login",
   loginUser
+);
+
+router.post(
+  "/forgot-password",
+  forgotPassword
+);
+
+router.post(
+  "/reset-password",
+  resetPassword
+);
+
+router.post(
+  "/resend-verification",
+  resendVerificationEmail
+);
+
+router.post(
+  "/verify-email",
+  verifyEmailAddress
 );
 
 router.get(

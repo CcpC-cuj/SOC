@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "seed:admin": "node src/seeder/createAdmin.js",
+    "seed:showcase": "node src/seeder/seedShowcaseProjects.js"
   },
   "keywords": [],
   "author": "",

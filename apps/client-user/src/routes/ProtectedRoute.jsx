@@ -1,4 +1,7 @@
-import { Navigate } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 
 import {
   getStoredUser,
@@ -8,6 +11,8 @@ import {
 const ProtectedRoute = ({
   children,
 }) => {
+  const location =
+    useLocation();
   const token = getUserToken();
   const user = getStoredUser();
 
@@ -16,6 +21,10 @@ const ProtectedRoute = ({
       <Navigate
         to="/login"
         replace
+        state={{
+          from:
+            location.pathname,
+        }}
       />
     );
   }

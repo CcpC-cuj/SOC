@@ -1,397 +1,321 @@
-// Login.jsx
-
-import { useState } from "react";
-
+import {
+  useEffect,
+  useState,
+} from "react";
 import { motion } from "framer-motion";
-
 import {
-  Mail,
-  Lock,
   ArrowRight,
+  FolderKanban,
+  Lock,
+  Mail,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
-
 import {
+  Link,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 
-import { FaGithub } from "react-icons/fa";
-
-import { useNavigate } from "react-router-dom";
-
-import { loginUser }
-from "../services/authService";
+import API from "../services/api";
+import { loginUser } from "../services/authService";
 
 const Login = () => {
-
   const navigate =
-  useNavigate();
+    useNavigate();
+  const location =
+    useLocation();
 
-const location =
-  useLocation();
+  const from =
+    location.state?.from ||
+    "/dashboard";
 
-const from =
-  location.state?.from
-  || "/dashboard";
-
+  const [settings, setSettings] =
+    useState(null);
   const [formData, setFormData] =
     useState({
       email: "",
       password: "",
     });
-
   const [loading, setLoading] =
     useState(false);
+  const [error, setError] =
+    useState("");
 
-  const handleChange = (e) => {
-
-    setFormData({
-      ...formData,
-      [e.target.name]:
-        e.target.value,
-    });
-
-  };
-
-const handleSubmit = async (e) => {
-
-  e.preventDefault();
-
-  try {
-
-    setLoading(true);
-
-    const data =
-      await loginUser(
-        formData
-      );
-
-    console.log(data.user);
-
-    // ADMIN
-    if (
-      data.user.authority ===
-      "admin"
-    ) {
-
-      navigate(
-        "/admin-dashboard"
-      );
-
-    } else {
-
-      // REDIRECT TO ORIGINAL PAGE
-      navigate(from);
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const response =
+          await API.get(
+            "/settings/public"
+          );
+        setSettings(response.data);
+      } catch (fetchError) {
+        console.error(fetchError);
+      }
     }
 
-  } catch (error) {
+    fetchSettings();
+  }, []);
 
-    console.log(
-      error.response?.data
-        ?.message ||
-      error.message
-    );
+  const handleChange = (event) => {
+    setFormData((current) => ({
+      ...current,
+      [event.target.name]:
+        event.target.value,
+    }));
+  };
 
-  } finally {
+  const handleSubmit = async (
+    event
+  ) => {
+    event.preventDefault();
+    setError("");
 
-    setLoading(false);
+    try {
+      setLoading(true);
+      const data =
+        await loginUser(formData);
 
-  }
-};
+      if (
+        data.user.authority ===
+        "admin"
+      ) {
+        navigate(
+          "/admin-dashboard"
+        );
+        return;
+      }
 
+      navigate(from);
+    } catch (loginError) {
+      setError(
+        loginError.response?.data
+          ?.message ||
+          "Unable to log you in right now."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-  // const handleSubmit = async (e) => {
-
-  //   e.preventDefault();
-
-  //   try {
-
-  //     setLoading(true);
-
-  //     const data =
-  //       await loginUser(
-  //         formData
-  //       );
-
-  //     console.log(data.user);
-
-  //     localStorage.setItem(
-  //       "token",
-  //       data.token
-  //     );
-
-  //     localStorage.setItem(
-  //       "user",
-  //       JSON.stringify(data.user)
-  //     );
-
-  //     if (
-  //         data.user.authority
-  //         === "admin"
-  //       ) {
-
-  //         navigate(
-  //           "/admin-dashboard"
-  //         );
-
-  //       }
-  //       else {
-
-  //         navigate(
-  //           "/dashboard"
-  //         );
-
-  //       }
-      
-  //   } catch (error) {
-
-  //     console.log(
-  //       error.response?.data
-  //         ?.message || error.message
-  //     );
-
-  //   } finally {
-
-  //     setLoading(false);
-
-  //   }
-
-  // };
-  
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050816] px-4 py-20 text-white sm:px-6 lg:px-8">
-
-      {/* BACKGROUND BLURS */}
+    <div className="relative min-h-screen overflow-hidden bg-[#050816] px-4 py-16 text-white sm:px-6 lg:px-8">
       <div className="absolute inset-0 -z-10">
-
-        <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl" />
-
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
-
+        <div className="absolute left-0 top-0 h-[26rem] w-[26rem] rounded-full bg-cyan-500/15 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-[30rem] w-[30rem] rounded-full bg-fuchsia-500/10 blur-3xl" />
       </div>
 
-      {/* MAIN CONTAINER */}
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-16 lg:grid-cols-2">
-
-        {/* LEFT SIDE */}
-        <motion.div
+      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1.05fr]">
+        <motion.section
           initial={{
             opacity: 0,
-            x: -60,
+            y: 24,
           }}
           animate={{
             opacity: 1,
-            x: 0,
+            y: 0,
           }}
           transition={{
-            duration: 0.8,
+            duration: 0.5,
           }}
-          className="hidden lg:block"
+          className="space-y-8"
         >
-
-          <div className="mb-6 inline-flex rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300">
-            🚀 Welcome Back Developer
+          <div className="inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200">
+            Sign in to continue your SOC journey
           </div>
 
-          <h1 className="mb-8 text-6xl font-black leading-tight">
-            Continue
-            <br />
-
-            Building With
-            <br />
-
-            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-blue-500 bg-clip-text text-transparent">
-              Your Team
-            </span>
-
-          </h1>
-
-          <p className="max-w-xl text-lg leading-relaxed text-slate-400">
-            Access your tasks, projects, team collaboration, and continue
-            building innovative solutions with Seasons of Code.
-          </p>
-
-          {/* STATS */}
-          <div className="mt-12 flex gap-10">
-
-            <div>
-
-              <h3 className="text-4xl font-black text-cyan-400">
-                50+
-              </h3>
-
-              <p className="text-slate-400">
-                Active Projects
-              </p>
-
-            </div>
-
-            <div>
-
-              <h3 className="text-4xl font-black text-purple-400">
-                500+
-              </h3>
-
-              <p className="text-slate-400">
-                Developers
-              </p>
-
-            </div>
-
+          <div>
+            <h1 className="max-w-2xl text-5xl font-black leading-tight sm:text-6xl">
+              Pick up where your team journey left off.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+              Participants can track review status, check assignments, and open their workspace here. Organizers can also sign in with their admin account.
+            </p>
           </div>
 
-        </motion.div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                icon: Sparkles,
+                title: "Review-aware",
+                text:
+                  "Your dashboard reflects the real review and assignment process.",
+              },
+              {
+                icon: FolderKanban,
+                title: "Workspace ready",
+                text:
+                  "Assigned members can jump straight into project work from one place.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Safer access",
+                text:
+                  "Recovery and verification tools are now built into the account flow.",
+              },
+            ].map((item) => {
+              const Icon = item.icon;
 
-        {/* RIGHT SIDE */}
-        <motion.div
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+                >
+                  <Icon
+                    size={22}
+                    className="text-cyan-300"
+                  />
+                  <h2 className="mt-4 text-lg font-bold">
+                    {item.title}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    {item.text}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="rounded-[2rem] border border-white/10 bg-[#081121] p-6">
+            <p className="text-sm uppercase tracking-[0.22em] text-slate-400">
+              Registration notice
+            </p>
+            <p className="mt-3 text-slate-300">
+              {settings
+                ?.registrationNotice ||
+                "Register with your strengths first. The organizing team will review and assign projects later."}
+            </p>
+            {settings?.registrationDeadline && (
+              <p className="mt-3 text-sm text-cyan-200">
+                Registration deadline:
+                {" "}
+                {new Date(
+                  settings.registrationDeadline
+                ).toLocaleString()}
+              </p>
+            )}
+          </div>
+        </motion.section>
+
+        <motion.section
           initial={{
             opacity: 0,
-            scale: 0.9,
+            scale: 0.96,
           }}
           animate={{
             opacity: 1,
             scale: 1,
           }}
           transition={{
-            duration: 0.8,
+            duration: 0.5,
+            delay: 0.1,
           }}
-          className="mx-auto w-full max-w-lg rounded-[40px] border border-white/10 bg-white/5 p-8 backdrop-blur-xl sm:p-10"
+          className="rounded-[2.5rem] border border-white/10 bg-white/[0.05] p-8 backdrop-blur-xl sm:p-10"
         >
-
-          {/* HEADER */}
-          <div className="mb-10 text-center">
-
-            <h2 className="mb-3 text-4xl font-black">
+          <div className="mb-8">
+            <h2 className="text-4xl font-black">
               Login
             </h2>
-
-            <p className="text-slate-400">
-              Access your Seasons of Code workspace
+            <p className="mt-3 text-slate-400">
+              Use the email and password from your SOC account.
             </p>
-
           </div>
 
-          {/* FORM */}
           <form
             onSubmit={handleSubmit}
             className="space-y-6"
           >
-
-            {/* EMAIL */}
-            <div>
-
-              <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
+            <label className="block">
+              <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
                 <Mail size={18} />
-                Email Address
-              </label>
-
+                Email address
+              </span>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
-                className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
+                placeholder="you@example.com"
+                className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
+                required
               />
+            </label>
 
-            </div>
-
-            {/* PASSWORD */}
-            <div>
-
-              <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
+            <label className="block">
+              <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
                 <Lock size={18} />
                 Password
-              </label>
-
+              </span>
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Enter your password"
-                className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
+                className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
+                required
               />
+            </label>
 
-            </div>
+            {location.state?.from && (
+              <div className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+                Sign in to continue to the page you were trying to open.
+              </div>
+            )}
 
-            {/* OPTIONS */}
-            <div className="flex items-center justify-between text-sm">
+            {error && (
+              <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                {error}
+              </div>
+            )}
 
-              <label className="flex items-center gap-2 text-slate-400">
-
-                <input type="checkbox" />
-
-                Remember Me
-
-              </label>
-
-              <button
-                type="button"
-                className="text-cyan-400 hover:underline"
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+              <Link
+                to="/forgot-password"
+                className="text-cyan-300 transition hover:text-cyan-100"
               >
-                Forgot Password?
-              </button>
-
+                Forgot password?
+              </Link>
+              <Link
+                to="/verify-email"
+                className="text-slate-400 transition hover:text-slate-200"
+              >
+                Need to verify your email?
+              </Link>
             </div>
 
-            {/* LOGIN BUTTON */}
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-4 text-lg font-bold transition duration-300 hover:scale-[1.02]"
+              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-8 py-4 text-lg font-bold transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
             >
-
-              {
-                loading
-                  ? "Logging In..."
-                  : "Login"
-              }
-
-              <ArrowRight size={20} />
-
+              {loading
+                ? "Logging in..."
+                : "Login to SOC"}
+              <ArrowRight size={18} />
             </button>
-
-            {/* DIVIDER */}
-            <div className="relative py-4">
-
-              <div className="absolute left-0 top-1/2 h-px w-full bg-white/10" />
-
-              <span className="relative mx-auto block w-fit bg-[#050816] px-4 text-sm text-slate-500">
-                OR CONTINUE WITH
-              </span>
-
-            </div>
-
-            {/* GITHUB LOGIN */}
-            <button
-              type="button"
-              className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-8 py-4 font-semibold transition hover:bg-white/10"
-            >
-
-              <FaGithub size={22} />
-
-              Continue with GitHub
-
-            </button>
-
           </form>
 
-          {/* FOOTER */}
-          <div className="mt-8 text-center text-slate-400">
-
-            Don’t have an account?{" "}
-
-            <button className="font-semibold text-cyan-400 hover:underline">
-              Register Now
-            </button>
-
+          <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-5 text-sm text-slate-300">
+            New here? Register with your skills and interests first, then let the organizers place you into the right squad.
+            <div className="mt-4 flex flex-wrap gap-4">
+              <Link
+                to="/register"
+                className="font-semibold text-cyan-300 transition hover:text-cyan-100"
+              >
+                Create account
+              </Link>
+              <Link
+                to="/projects"
+                className="font-semibold text-fuchsia-300 transition hover:text-fuchsia-100"
+              >
+                View showcase projects
+              </Link>
+            </div>
           </div>
-
-        </motion.div>
-
+        </motion.section>
       </div>
-
     </div>
   );
 };

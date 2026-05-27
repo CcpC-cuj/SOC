@@ -15,6 +15,9 @@ import API from "../services/api";
 import {
   registrationStatusLabels,
 } from "../constants/registration";
+import {
+  resendVerificationEmail,
+} from "../services/authService";
 
 const statusCopy = {
   pending_review:
@@ -45,6 +48,12 @@ const statusTheme = {
 const Dashboard = () => {
   const [dashboard, setDashboard] =
     useState(null);
+  const [emailMessage, setEmailMessage] =
+    useState("");
+  const [emailPreview, setEmailPreview] =
+    useState(null);
+  const [resendingEmail, setResendingEmail] =
+    useState(false);
 
   useEffect(() => {
     async function fetchDashboard() {
@@ -62,6 +71,35 @@ const Dashboard = () => {
 
     fetchDashboard();
   }, []);
+
+  const handleResendVerification =
+    async () => {
+      if (!dashboard?.user?.email) {
+        return;
+      }
+
+      try {
+        setResendingEmail(true);
+        const response =
+          await resendVerificationEmail(
+            dashboard.user.email
+          );
+        setEmailMessage(
+          response.message
+        );
+        setEmailPreview(
+          response.preview || null
+        );
+      } catch (error) {
+        setEmailMessage(
+          error.response?.data
+            ?.message ||
+            "Unable to resend verification right now."
+        );
+      } finally {
+        setResendingEmail(false);
+      }
+    };
 
   if (!dashboard) {
     return (
@@ -93,6 +131,52 @@ const Dashboard = () => {
           Track your registration progress, review your assignment status, and step into your workspace when your team is ready.
         </p>
       </div>
+
+      {!dashboard.user.emailVerified && (
+        <div className="mb-8 rounded-[2rem] border border-amber-300/20 bg-amber-500/10 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm uppercase tracking-[0.22em] text-amber-100/80">
+                Email verification
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-amber-50">
+                Verify your email to stay updated
+              </h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-amber-100/90">
+                Your account works, but verifying your email helps organizers send assignment and recovery updates reliably.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={
+                handleResendVerification
+              }
+              disabled={resendingEmail}
+              className="rounded-2xl border border-amber-200/20 bg-amber-200/10 px-5 py-3 text-sm font-semibold text-amber-50 transition hover:border-amber-100/40 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {resendingEmail
+                ? "Sending..."
+                : "Resend verification email"}
+            </button>
+          </div>
+
+          {emailMessage && (
+            <p className="mt-4 text-sm text-amber-50">
+              {emailMessage}
+            </p>
+          )}
+
+          {emailPreview?.url && (
+            <a
+              href={emailPreview.url}
+              className="mt-3 inline-flex text-sm text-cyan-200 underline"
+            >
+              Open preview verification link
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="mb-12 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl">
         <div className="flex flex-wrap items-start justify-between gap-4">

@@ -40,6 +40,11 @@ const initialAssignment = {
   adminNotes: "",
 };
 
+const initialAnnouncement = {
+  subject: "",
+  message: "",
+};
+
 const Users = () => {
   const [users, setUsers] =
     useState([]);
@@ -57,6 +62,16 @@ const Users = () => {
     useState(null);
   const [assignment, setAssignment] =
     useState(initialAssignment);
+  const [announcement, setAnnouncement] =
+    useState(initialAnnouncement);
+  const [
+    announcementMessage,
+    setAnnouncementMessage,
+  ] = useState("");
+  const [
+    sendingAnnouncement,
+    setSendingAnnouncement,
+  ] = useState(false);
 
   useEffect(() => {
     async function fetchInitialData() {
@@ -279,6 +294,58 @@ const Users = () => {
     }
   };
 
+  const sendAnnouncement = async () => {
+    if (
+      !announcement.subject.trim() ||
+      !announcement.message.trim()
+    ) {
+      setAnnouncementMessage(
+        "Add both a subject and a message before sending."
+      );
+      return;
+    }
+
+    if (users.length === 0) {
+      setAnnouncementMessage(
+        "There are no participants in the current filtered list."
+      );
+      return;
+    }
+
+    try {
+      setSendingAnnouncement(true);
+      const response =
+        await AdminAPI.post(
+          "/users/announce",
+          {
+            subject:
+              announcement.subject,
+            message:
+              announcement.message,
+            recipientIds:
+              users.map(
+                (user) => user._id
+              ),
+          }
+        );
+
+      setAnnouncementMessage(
+        `${response.data.message} Recipients: ${response.data.recipientCount}. Delivered: ${response.data.deliveredCount}.`
+      );
+      setAnnouncement(
+        initialAnnouncement
+      );
+    } catch (error) {
+      setAnnouncementMessage(
+        error.response?.data
+          ?.message ||
+          "Unable to send the announcement right now."
+      );
+    } finally {
+      setSendingAnnouncement(false);
+    }
+  };
+
   return (
     <div className="space-y-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -369,6 +436,82 @@ const Users = () => {
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-7">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-black">
+              Bulk announcement
+            </h2>
+            <p className="mt-3 max-w-3xl text-slate-400">
+              Send one message to the participants currently visible in this filtered list.
+            </p>
+          </div>
+
+          <span className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100">
+            {users.length}
+            {" "}
+            recipients in view
+          </span>
+        </div>
+
+        <div className="mt-6 grid gap-4">
+          <input
+            type="text"
+            value={announcement.subject}
+            onChange={(event) =>
+              setAnnouncement(
+                (current) => ({
+                  ...current,
+                  subject:
+                    event.target.value,
+                })
+              )
+            }
+            placeholder="Announcement subject"
+            className="rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none"
+          />
+
+          <textarea
+            rows="5"
+            value={announcement.message}
+            onChange={(event) =>
+              setAnnouncement(
+                (current) => ({
+                  ...current,
+                  message:
+                    event.target.value,
+                })
+              )
+            }
+            placeholder="Write the update, reminder, or scheduling note you want to send."
+            className="rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none"
+          />
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+          <p className="text-sm text-slate-400">
+            Tip: use the filters above first, then send this to that exact group.
+          </p>
+
+          <button
+            type="button"
+            onClick={sendAnnouncement}
+            disabled={sendingAnnouncement}
+            className="rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-6 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {sendingAnnouncement
+              ? "Sending..."
+              : "Send announcement"}
+          </button>
+        </div>
+
+        {announcementMessage && (
+          <p className="mt-4 text-sm text-slate-300">
+            {announcementMessage}
+          </p>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

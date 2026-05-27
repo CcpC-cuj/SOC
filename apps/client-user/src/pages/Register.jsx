@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   Clock3,
   Code2,
-  Github,
   Layers3,
   Lock,
   Mail,
@@ -223,7 +222,7 @@ const Register = () => {
             className="space-y-8"
           >
             <div className="inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-200">
-              Registration -> Review -> Assignment
+              Registration {"->"} Review {"->"} Assignment
             </div>
 
             <div>
@@ -473,11 +472,7 @@ const Register = () => {
                     className="block"
                   >
                     <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200 capitalize">
-                      {field === "github" ? (
-                        <Github size={16} />
-                      ) : (
-                        <Code2 size={16} />
-                      )}
+                      <Code2 size={16} />
                       {field
                         .replace(
                           "linkedin",
