@@ -1,13 +1,72 @@
-// TimelineSection.jsx
-
 import { motion } from "framer-motion";
 import {
+  CheckCircle2,
+  ClipboardList,
   Rocket,
-  Trophy,
   Users,
-  Code2,
-  Sparkles,
 } from "lucide-react";
+
+const steps = [
+  {
+    icon: ClipboardList,
+    title: "Registration Opens",
+    badge: "Step 1",
+    text:
+      "Members submit their capability profile, interests, role preferences, and availability.",
+    iconTone:
+      "from-cyan-500 to-blue-600",
+    badgeTone:
+      "border-cyan-500/20 bg-cyan-500/10 text-cyan-300",
+    titleTone: "text-cyan-300",
+    borderTone:
+      "border-cyan-500/20",
+  },
+  {
+    icon: Users,
+    title: "Review and Team Balancing",
+    badge: "Step 2",
+    text:
+      "Organizers review registrations, shortlist members, and plan team distribution across projects.",
+    iconTone:
+      "from-fuchsia-500 to-pink-600",
+    badgeTone:
+      "border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-300",
+    titleTone:
+      "text-fuchsia-300",
+    borderTone:
+      "border-fuchsia-500/20",
+  },
+  {
+    icon: Rocket,
+    title: "Assignment and Kickoff",
+    badge: "Step 3",
+    text:
+      "Assigned members receive project placement, team allocation, and workspace access.",
+    iconTone:
+      "from-emerald-500 to-green-600",
+    badgeTone:
+      "border-emerald-500/20 bg-emerald-500/10 text-emerald-300",
+    titleTone:
+      "text-emerald-300",
+    borderTone:
+      "border-emerald-500/20",
+  },
+  {
+    icon: CheckCircle2,
+    title: "Build, Review, Submit",
+    badge: "Step 4",
+    text:
+      "Teams collaborate inside their workspace, complete tasks, and move toward a project submission.",
+    iconTone:
+      "from-amber-500 to-orange-500",
+    badgeTone:
+      "border-amber-500/20 bg-amber-500/10 text-amber-200",
+    titleTone:
+      "text-amber-200",
+    borderTone:
+      "border-amber-500/20",
+  },
+];
 
 const TimelineSection = () => {
   return (
@@ -15,20 +74,12 @@ const TimelineSection = () => {
       id="timeline"
       className="relative overflow-hidden py-24 lg:py-32"
     >
-
-      {/* BACKGROUND */}
       <div className="absolute inset-0 -z-10">
-
         <div className="absolute left-[-100px] top-20 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-
-        <div className="absolute bottom-0 right-[-100px] h-72 w-72 rounded-full bg-purple-500/10 blur-3xl" />
-
+        <div className="absolute bottom-0 right-[-100px] h-72 w-72 rounded-full bg-fuchsia-500/10 blur-3xl" />
       </div>
 
-      {/* MAIN WRAPPER */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
-        {/* HEADER */}
         <motion.div
           initial={{
             opacity: 0,
@@ -46,254 +97,70 @@ const TimelineSection = () => {
           }}
           className="mb-20 text-center"
         >
-
-          {/* BADGE */}
           <div className="mb-6 inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-5 py-2 text-sm font-medium text-cyan-300">
-            🚀 Journey Through The Seasons
+            Registration Journey
           </div>
 
-          {/* TITLE */}
           <h2 className="text-5xl font-black leading-tight sm:text-6xl">
-            Seasons
+            From sign-up
             <span className="gradient-text">
-              {" "}Timeline
+              {" "}to squad placement
             </span>
           </h2>
 
-          {/* DESCRIPTION */}
           <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-slate-300">
-            Explore the complete year-round coding ecosystem designed
-            to help developers learn, collaborate, compete, and grow
-            through real-world innovation.
+            The system is built to guide members forward with clarity. Every step is meant to reduce confusion and increase confidence.
           </p>
-
         </motion.div>
 
-        {/* TIMELINE */}
-        <div className="relative mx-auto max-w-5xl">
+        <div className="grid gap-8 lg:grid-cols-2">
+          {steps.map((step, index) => {
+            const Icon = step.icon;
 
-          {/* CENTER LINE */}
-          <div className="absolute left-6 top-0 h-full w-[2px] bg-gradient-to-b from-cyan-500 via-purple-500 to-pink-500 md:left-1/2 md:-translate-x-1/2" />
-
-          <div className="space-y-16">
-
-            {/* SUMMER */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 40,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              viewport={{
-                once: true,
-              }}
-              transition={{
-                duration: 0.8,
-              }}
-              className="relative grid items-center gap-10 md:grid-cols-2"
-            >
-
-              {/* DOT */}
-              <div className="absolute left-6 top-10 z-20 h-5 w-5 -translate-x-1/2 rounded-full border-4 border-cyan-400 bg-[#050816] md:left-1/2" />
-
-              {/* CARD */}
-              <div className="md:pr-16">
-                <div className="overflow-hidden rounded-[32px] border border-cyan-500/20 bg-white/[0.03] p-8 backdrop-blur-2xl">
-
-                  {/* ICON */}
-                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/20">
-                    <Rocket size={30} />
-                  </div>
-
-                  {/* DATE */}
-                  <div className="mb-4 inline-flex rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300">
-                    June - July
-                  </div>
-
-                  {/* TITLE */}
-                  <h3 className="mb-5 text-3xl font-black text-cyan-400">
-                    Summer Project Season
-                  </h3>
-
-                  {/* DESCRIPTION */}
-                  <p className="mb-8 text-lg leading-8 text-slate-300">
-                    Collaborate with developers, mentors, and designers
-                    to build real-world projects using modern technologies.
-                  </p>
-
-                  {/* TAGS */}
-                  <div className="flex flex-wrap gap-3">
-
-                    <div className="rounded-xl bg-white/5 px-4 py-2 text-sm text-slate-300">
-                      Team Projects
-                    </div>
-
-                    <div className="rounded-xl bg-white/5 px-4 py-2 text-sm text-slate-300">
-                      Mentorship
-                    </div>
-
-                    <div className="rounded-xl bg-white/5 px-4 py-2 text-sm text-slate-300">
-                      Code Reviews
-                    </div>
-
-                  </div>
-
+            return (
+              <motion.div
+                key={step.title}
+                initial={{
+                  opacity: 0,
+                  y: 40,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                viewport={{
+                  once: true,
+                }}
+                transition={{
+                  duration: 0.6,
+                  delay: index * 0.08,
+                }}
+                className={`overflow-hidden rounded-[32px] border bg-white/[0.03] p-8 backdrop-blur-2xl ${step.borderTone}`}
+              >
+                <div
+                  className={`mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${step.iconTone} shadow-lg shadow-black/20`}
+                >
+                  <Icon size={30} />
                 </div>
-              </div>
 
-              {/* EMPTY */}
-              <div />
-
-            </motion.div>
-
-            {/* AUTUMN */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 40,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              viewport={{
-                once: true,
-              }}
-              transition={{
-                duration: 0.8,
-              }}
-              className="relative grid items-center gap-10 md:grid-cols-2"
-            >
-
-              {/* DOT */}
-              <div className="absolute left-6 top-10 z-20 h-5 w-5 -translate-x-1/2 rounded-full border-4 border-purple-400 bg-[#050816] md:left-1/2" />
-
-              {/* EMPTY */}
-              <div />
-
-              {/* CARD */}
-              <div className="md:pl-16">
-                <div className="overflow-hidden rounded-[32px] border border-purple-500/20 bg-white/[0.03] p-8 backdrop-blur-2xl">
-
-                  {/* ICON */}
-                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg shadow-purple-500/20">
-                    <Trophy size={30} />
-                  </div>
-
-                  {/* DATE */}
-                  <div className="mb-4 inline-flex rounded-full border border-purple-500/20 bg-purple-500/10 px-4 py-2 text-sm text-purple-300">
-                    October - November
-                  </div>
-
-                  {/* TITLE */}
-                  <h3 className="mb-5 text-3xl font-black text-purple-400">
-                    Autumn Coding Challenge
-                  </h3>
-
-                  {/* DESCRIPTION */}
-                  <p className="mb-8 text-lg leading-8 text-slate-300">
-                    Participate in coding contests, hackathons,
-                    algorithmic battles, and innovation challenges.
-                  </p>
-
-                  {/* TAGS */}
-                  <div className="flex flex-wrap gap-3">
-
-                    <div className="rounded-xl bg-white/5 px-4 py-2 text-sm text-slate-300">
-                      Competitive Coding
-                    </div>
-
-                    <div className="rounded-xl bg-white/5 px-4 py-2 text-sm text-slate-300">
-                      Leaderboards
-                    </div>
-
-                    <div className="rounded-xl bg-white/5 px-4 py-2 text-sm text-slate-300">
-                      Exciting Prizes
-                    </div>
-
-                  </div>
-
+                <div
+                  className={`mb-4 inline-flex rounded-full border px-4 py-2 text-sm ${step.badgeTone}`}
+                >
+                  {step.badge}
                 </div>
-              </div>
 
-            </motion.div>
+                <h3
+                  className={`mb-4 text-3xl font-black ${step.titleTone}`}
+                >
+                  {step.title}
+                </h3>
 
-            {/* COMMUNITY */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 40,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              viewport={{
-                once: true,
-              }}
-              transition={{
-                duration: 0.8,
-              }}
-              className="relative grid items-center gap-10 md:grid-cols-2"
-            >
-
-              {/* DOT */}
-              <div className="absolute left-6 top-10 z-20 h-5 w-5 -translate-x-1/2 rounded-full border-4 border-pink-400 bg-[#050816] md:left-1/2" />
-
-              {/* CARD */}
-              <div className="md:pr-16">
-                <div className="overflow-hidden rounded-[32px] border border-pink-500/20 bg-white/[0.03] p-8 backdrop-blur-2xl">
-
-                  {/* ICON */}
-                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-orange-500 shadow-lg shadow-pink-500/20">
-                    <Users size={30} />
-                  </div>
-
-                  {/* DATE */}
-                  <div className="mb-4 inline-flex rounded-full border border-pink-500/20 bg-pink-500/10 px-4 py-2 text-sm text-pink-300">
-                    December - May
-                  </div>
-
-                  {/* TITLE */}
-                  <h3 className="mb-5 text-3xl font-black text-pink-400">
-                    Community & Workshops
-                  </h3>
-
-                  {/* DESCRIPTION */}
-                  <p className="mb-8 text-lg leading-8 text-slate-300">
-                    Engage in workshops, networking events,
-                    mentoring sessions, and collaborative learning.
-                  </p>
-
-                  {/* TAGS */}
-                  <div className="flex flex-wrap gap-3">
-
-                    <div className="rounded-xl bg-white/5 px-4 py-2 text-sm text-slate-300">
-                      Workshops
-                    </div>
-
-                    <div className="rounded-xl bg-white/5 px-4 py-2 text-sm text-slate-300">
-                      Networking
-                    </div>
-
-                    <div className="rounded-xl bg-white/5 px-4 py-2 text-sm text-slate-300">
-                      Open Source
-                    </div>
-
-                  </div>
-
-                </div>
-              </div>
-
-              {/* EMPTY */}
-              <div />
-
-            </motion.div>
-
-          </div>
+                <p className="text-lg leading-8 text-slate-300">
+                  {step.text}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
