@@ -1,177 +1,193 @@
-// src/controllers/projectController.js
-import Project
-from "../models/Project.js";
+import Project from "../models/Project.js";
+import ProjectMember from "../models/ProjectMember.js";
 
+const sanitizeStringArray = (
+  values = []
+) =>
+  Array.isArray(values)
+    ? values
+        .map((value) =>
+          String(value).trim()
+        )
+        .filter(Boolean)
+    : [];
 
-
-// GET ALL PROJECTS
-export const getProjects =
-  async (req, res) => {
-
-    try {
-
-      const projects =
-        await Project.find()
-          .populate(
-            "createdBy",
-            "name email"
-          );
-
-      res.json(projects);
-
-    } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
-      });
-
-    }
-};
-
-// GET SINGLE PROJECT
-export const getProject =
-  async (req, res) => {
-
-    try {
-
-      const project =
-        await Project.findById(
-          req.params.id
-        ).populate(
+export const getProjects = async (
+  req,
+  res
+) => {
+  try {
+    const projects =
+      await Project.find()
+        .populate(
           "createdBy",
           "name email"
-        );
-
-      if (!project) {
-
-        return res.status(404)
-          .json({
-            message:
-              "Project not found",
-          });
-      }
-
-      res.json(project);
-
-    } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
-      });
-
-    }
-};
-
-// CREATE PROJECT
-export const createProject =
-  async (req, res) => {
-
-    try {
-
-      const project =
-        await Project.create({
-          ...req.body,
-
-          createdBy:
-            req.user._id,
+        )
+        .sort({
+          isShowcase: -1,
+          createdAt: -1,
         });
 
-      res.status(201).json(
-        project
+    const projectsWithCounts =
+      await Promise.all(
+        projects.map(async (project) => {
+          const activeMembers =
+            await ProjectMember.countDocuments(
+              {
+                project: project._id,
+                status: "active",
+              }
+            );
+
+          return {
+            ...project.toObject(),
+            activeMembers,
+          };
+        })
       );
 
-    } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
-      });
-
-    }
+    return res.json(
+      projectsWithCounts
+    );
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
 };
 
-// DELETE PROJECT
-export const deleteProject =
-  async (req, res) => {
+export const getProject = async (
+  req,
+  res
+) => {
+  try {
+    const project =
+      await Project.findById(
+        req.params.id
+      ).populate(
+        "createdBy",
+        "name email"
+      );
 
-    try {
+    if (!project) {
+      return res.status(404).json({
+        message: "Project not found",
+      });
+    }
 
-      const project =
-        await Project.findById(
-          req.params.id
-        );
+    const activeMembers =
+      await ProjectMember.countDocuments({
+        project: project._id,
+        status: "active",
+      });
 
-      if (!project) {
+    return res.json({
+      ...project.toObject(),
+      activeMembers,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 
-        return res.status(404)
-          .json({
-            message:
-              "Project not found",
-          });
-      }
+export const createProject = async (
+  req,
+  res
+) => {
+  try {
+    const project =
+      await Project.create({
+        ...req.body,
+        techStack: sanitizeStringArray(
+          req.body.techStack
+        ),
+        highlights: sanitizeStringArray(
+          req.body.highlights
+        ),
+        createdBy: req.user._id,
+      });
 
-      await Project.findByIdAndDelete(
+    return res.status(201).json(
+      project
+    );
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+export const deleteProject = async (
+  req,
+  res
+) => {
+  try {
+    const project =
+      await Project.findById(
         req.params.id
       );
 
-      res.json({
-        message:
-          "Project deleted",
+    if (!project) {
+      return res.status(404).json({
+        message: "Project not found",
       });
-
-    } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
-      });
-
     }
+
+    await Project.findByIdAndDelete(
+      req.params.id
+    );
+
+    return res.json({
+      message: "Project deleted",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
 };
 
-
-
-// UPDATE PROJECT
-export const updateProject =
-  async (req, res) => {
-
-    try {
-
-      const project =
-        await Project.findById(
-          req.params.id
-        );
-
-      if (!project) {
-
-        return res.status(404)
-          .json({
-            message:
-              "Project not found",
-          });
-      }
-
-      const updatedProject =
-        await Project.findByIdAndUpdate(
-          req.params.id,
-          req.body,
-          {
-            new: true,
-          }
-        );
-
-      res.json(
-        updatedProject
+export const updateProject = async (
+  req,
+  res
+) => {
+  try {
+    const project =
+      await Project.findById(
+        req.params.id
       );
 
-    } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
+    if (!project) {
+      return res.status(404).json({
+        message: "Project not found",
       });
-
     }
+
+    const updatedProject =
+      await Project.findByIdAndUpdate(
+        req.params.id,
+        {
+          ...req.body,
+          techStack:
+            sanitizeStringArray(
+              req.body.techStack
+            ),
+          highlights:
+            sanitizeStringArray(
+              req.body.highlights
+            ),
+        },
+        {
+          new: true,
+        }
+      );
+
+    return res.json(updatedProject);
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
 };
