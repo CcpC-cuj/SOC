@@ -134,6 +134,7 @@ import dashboardRoutes from "./src/routes/dashboardRoutes.js";
 import taskRoutes from "./src/routes/taskRoutes.js";
 import projectMemberRoutes from "./src/routes/projectMemberRoutes.js";
 import projectSubmissionRoutes from "./src/routes/projectSubmissionRoutes.js";
+import settingsRoutes from "./src/routes/settingsRoutes.js";
 
 dotenv.config();
 
@@ -318,6 +319,11 @@ app.use(
   projectSubmissionRoutes
 );
 
+app.use(
+  "/api/settings",
+  settingsRoutes
+);
+
 
 // 404 HANDLER
 app.use((req, res) => {
@@ -367,4 +373,3 @@ app.listen(
 
   }
 );
-

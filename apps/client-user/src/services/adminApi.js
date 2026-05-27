@@ -1,82 +1,42 @@
 import axios from "axios";
 
 import {
-  clearAdminAuth,
-} from "./authService";
+  clearAdminSession,
+  getAdminToken,
+} from "./authStorage";
 
-const AdminAPI =
-  axios.create({
+const AdminAPI = axios.create({
+  baseURL:
+    import.meta.env.VITE_API_URL,
+  withCredentials: true,
+});
 
-    baseURL:
-      import.meta.env
-        .VITE_API_URL,
-
-    withCredentials: true,
-  });
-
-
-// REQUEST INTERCEPTOR
 AdminAPI.interceptors.request.use(
-
   (config) => {
+    const token = getAdminToken();
 
-    const token =
-      localStorage.getItem(
-        "admin_token"
-      );
-
-    // ATTACH TOKEN
     if (token) {
-
       config.headers.Authorization =
         `Bearer ${token}`;
     }
 
     return config;
   },
-
-  (error) => {
-
-    return Promise.reject(
-      error
-    );
-  }
+  (error) =>
+    Promise.reject(error)
 );
 
-
-// RESPONSE INTERCEPTOR
 AdminAPI.interceptors.response.use(
-
   (response) => response,
-
   async (error) => {
-
-    // UNAUTHORIZED
     if (
-      error.response &&
-      error.response.status === 401
+      error.response?.status === 401
     ) {
-
-      console.error(
-        "Admin unauthorized"
-      );
-
-      clearAdminAuth();
+      clearAdminSession();
+      window.location.href = "/login";
     }
 
-    // SERVER OFFLINE
-    if (
-      error.code === "ERR_NETWORK"
-    ) {
-
-      console.error(
-        "Server unreachable"
-      );
-    }
-
-    return Promise.reject(
-      error
-    );
+    return Promise.reject(error);
   }
 );
 

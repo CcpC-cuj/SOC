@@ -1,31 +1,17 @@
-// src/routes/AdminRoute.jsx
+import { Navigate } from "react-router-dom";
 
 import {
-  Navigate,
-} from "react-router-dom";
+  getAdminToken,
+  getStoredAdmin,
+} from "../services/authStorage";
 
 const AdminRoute = ({
   children,
 }) => {
+  const token = getAdminToken();
+  const user = getStoredAdmin();
 
-  const token =
-    localStorage.getItem(
-      "admin_token"
-    );
-
-  const userData =
-    localStorage.getItem(
-      "admin_user"
-    );
-
-  const user =
-    userData
-      ? JSON.parse(userData)
-      : null;
-
-  // NOT LOGGED IN
   if (!token || !user) {
-
     return (
       <Navigate
         to="/login"
@@ -34,12 +20,7 @@ const AdminRoute = ({
     );
   }
 
-  // NOT ADMIN
-  if (
-    user.authority
-    !== "admin"
-  ) {
-
+  if (user.authority !== "admin") {
     return (
       <Navigate
         to="/dashboard"

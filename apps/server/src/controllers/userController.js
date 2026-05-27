@@ -414,6 +414,48 @@ export const updateRegistrationReview =
           adminNotes.trim();
       }
 
+      if (
+        ["waitlisted", "rejected"].includes(
+          user.registrationStatus
+        )
+      ) {
+        await ProjectMember.updateMany(
+          {
+            user: user._id,
+            status: "active",
+          },
+          {
+            status: "removed",
+            isLeader: false,
+            $unset: {
+              team: "",
+            },
+          }
+        );
+
+        await Team.updateMany(
+          {
+            members: user._id,
+          },
+          {
+            $pull: {
+              members: user._id,
+            },
+          }
+        );
+
+        await Team.updateMany(
+          {
+            leader: user._id,
+          },
+          {
+            $unset: {
+              leader: "",
+            },
+          }
+        );
+      }
+
       appendHistoryEntry(user, {
         action: "status-updated",
         status:

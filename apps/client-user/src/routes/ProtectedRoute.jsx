@@ -1,18 +1,17 @@
+import { Navigate } from "react-router-dom";
+
 import {
-  Navigate,
-} from "react-router-dom";
+  getStoredUser,
+  getUserToken,
+} from "../services/authStorage";
 
 const ProtectedRoute = ({
   children,
 }) => {
+  const token = getUserToken();
+  const user = getStoredUser();
 
-  const token =
-    localStorage.getItem(
-      "user_token"
-    );
-
-  if (!token) {
-
+  if (!token || !user) {
     return (
       <Navigate
         to="/login"

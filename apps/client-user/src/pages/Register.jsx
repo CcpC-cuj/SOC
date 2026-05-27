@@ -1,443 +1,712 @@
-// Register.jsx
-
-import { useState } from "react";
-
+import {
+  useEffect,
+  useState,
+} from "react";
 import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  Code2,
+  Github,
+  Layers3,
+  Lock,
+  Mail,
+  User,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
-  User,
-  Mail,
-  Code2,
-  ArrowRight,
-  Lock,
-} from "lucide-react";
-
-import { FaGithub } from "react-icons/fa";
-
-import { useNavigate } from "react-router-dom";
-
+  DOMAIN_OPTIONS,
+  EXPERIENCE_LEVELS,
+  ROLE_OPTIONS,
+} from "../constants/registration";
 import { registerUser } from "../services/authService";
+import API from "../services/api";
+
+const initialFormData = {
+  name: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  department: "",
+  program: "",
+  roll: "",
+  phone: "",
+  github: "",
+  linkedin: "",
+  portfolio: "",
+  skills: "",
+  experienceLevel: "beginner",
+  preferredDomains: [],
+  preferredRoles: [],
+  availability: "",
+  priorExperience: "",
+  whyJoin: "",
+};
 
 const Register = () => {
-
   const navigate = useNavigate();
 
+  const [settings, setSettings] =
+    useState(null);
   const [formData, setFormData] =
-    useState({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      github: "",
-      skills: "",
-      department: "",
-      roll: "",
-      program: "",
-      experienceLevel: "beginner",
-    });
-
+    useState(initialFormData);
   const [loading, setLoading] =
     useState(false);
+  const [error, setError] =
+    useState("");
 
-    const [error,
-      setError] =
-      useState("");
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const response =
+          await API.get(
+            "/settings/public"
+          );
+        setSettings(response.data);
+      } catch (fetchError) {
+        console.error(fetchError);
+      }
+    }
 
-  const handleChange = (e) => {
+    fetchSettings();
+  }, []);
 
-    setFormData({
-      ...formData,
-      [e.target.name]:
-        e.target.value,
-    });
+  const isClosed =
+    settings
+    && (
+      !settings.registrationOpen
+      || (
+        settings.registrationDeadline
+        && new Date(
+          settings.registrationDeadline
+        ) < new Date()
+      )
+    );
 
+  const handleChange = (event) => {
+    const {
+      name,
+      value,
+    } = event.target;
+
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
   };
 
-  // HANDLE SUBMIT
-const handleSubmit = async (e) => {
-
-  e.preventDefault();
-
-  setError("");
-
-  // REQUIRED
-  if (
-    !formData.name ||
-    !formData.email ||
-    !formData.password
-  ) {
-
-    return setError(
-      "Please fill all required fields"
-    );
-  }
-
-  // PASSWORD LENGTH
-  if (
-    formData.password.length < 6
-  ) {
-
-    return setError(
-      "Password must be at least 6 characters"
-    );
-  }
-
-  // PASSWORD MATCH
-  if (
-    formData.password !==
-    formData.confirmPassword
-  ) {
-
-    return setError(
-      "Passwords do not match"
-    );
-  }
-
-  try {
-
-    setLoading(true);
-
-    // PREPARE PAYLOAD
-    const payload = {
-      ...formData,
-
-      skills:
-        formData.skills
-          .split(",")
-          .map((skill) =>
-            skill.trim()
+  const toggleMultiSelect = (
+    key,
+    value
+  ) => {
+    setFormData((current) => ({
+      ...current,
+      [key]: current[key].includes(
+        value
+      )
+        ? current[key].filter(
+            (item) =>
+              item !== value
           )
-          .filter(Boolean),
-    };
+        : [...current[key], value],
+    }));
+  };
 
-    // REMOVE CONFIRM PASSWORD
-    delete payload.confirmPassword;
+  const validateForm = () => {
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.password ||
+      !formData.department ||
+      !formData.program ||
+      !formData.roll
+    ) {
+      return "Please complete the required registration fields.";
+    }
 
-    // REGISTER USER
-    await registerUser(
-      payload
-    );
+    if (
+      formData.password.length < 6
+    ) {
+      return "Password must be at least 6 characters long.";
+    }
 
-    // REDIRECT
-    navigate("/dashboard");
+    if (
+      formData.password
+      !== formData.confirmPassword
+    ) {
+      return "Passwords do not match.";
+    }
 
-  } catch (error) {
+    if (
+      formData.preferredDomains
+        .length === 0
+    ) {
+      return "Choose at least one preferred domain.";
+    }
 
-    setError(
-      error.response?.data
-        ?.message ||
-      "Registration failed"
-    );
+    if (
+      formData.preferredRoles.length ===
+      0
+    ) {
+      return "Choose at least one preferred role.";
+    }
 
-  } finally {
+    return "";
+  };
 
-    setLoading(false);
+  const handleSubmit = async (
+    event
+  ) => {
+    event.preventDefault();
+    setError("");
 
-  }
-};
+    const validationError =
+      validateForm();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        ...formData,
+        skills:
+          formData.skills
+            .split(",")
+            .map((skill) =>
+              skill.trim()
+            )
+            .filter(Boolean),
+      };
+
+      delete payload.confirmPassword;
+
+      await registerUser(payload);
+      navigate("/dashboard");
+    } catch (submitError) {
+      setError(
+        submitError.response?.data
+          ?.message ||
+          "Registration failed."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050816] text-white">
-
-      {/* BACKGROUND */}
       <div className="absolute inset-0 -z-10">
-
-        <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl" />
-
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
-
+        <div className="absolute left-0 top-0 h-[28rem] w-[28rem] rounded-full bg-cyan-500/15 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-[32rem] w-[32rem] rounded-full bg-fuchsia-500/10 blur-3xl" />
       </div>
 
-      {/* PAGE */}
-      <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-
-        {/* HEADER */}
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 40,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.7,
-          }}
-          className="mb-16 text-center"
-        >
-
-          <div className="mb-4 inline-flex rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300">
-            🚀 Join Seasons of Code
-          </div>
-
-          <h1 className="mb-6 text-5xl font-black sm:text-6xl">
-            Build With
-
-            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-blue-500 bg-clip-text text-transparent">
-              {" "}
-              Amazing Teams
-            </span>
-          </h1>
-
-          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-400">
-            Register now and collaborate with passionate developers on
-            real-world projects.
-          </p>
-
-        </motion.div>
-
-        {/* FORM */}
-        <motion.div
-          initial={{
-            opacity: 0,
-            scale: 0.95,
-          }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-          }}
-          transition={{
-            duration: 0.8,
-          }}
-          className="rounded-[40px] border border-white/10 bg-white/5 p-8 backdrop-blur-xl md:p-12"
-        >
-
-          <form
-            onSubmit={handleSubmit}
-            className="grid gap-12 lg:grid-cols-2"
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-[1.05fr_1.3fr]">
+          <motion.section
+            initial={{
+              opacity: 0,
+              y: 28,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
+            className="space-y-8"
           >
-
-            {/* LEFT SIDE */}
-            <div className="space-y-8">
-
-              {/* NAME */}
-              <div>
-
-                <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
-                  <User size={18} />
-                  Full Name
-                </label>
-
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter your full name"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
-                />
-
-              </div>
-
-              {/* EMAIL */}
-              <div>
-
-                <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
-                  <Mail size={18} />
-                  Email Address
-                </label>
-
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter your email"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
-                />
-
-              </div>
-
-              {/* PASSWORD */}
-              <div>
-
-                <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
-                  <Lock size={18} />
-                  Password
-                </label>
-
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter password"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
-                />
-
-              </div>
-
-
-              {/* CONFIRM PASSWORD */}
-                <div>
-
-                  <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
-
-                    <Lock size={18} />
-
-                    Confirm Password
-
-                  </label>
-
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    placeholder="Confirm password"
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
-                  />
-
-                </div>
-
-              {/* GITHUB */}
-                <div>
-
-                  <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
-
-                    <FaGithub size={18} />
-
-                    GitHub Profile
-
-                  </label>
-
-                  <input
-                    type="url"
-                    name="github"
-                    value={formData.github}
-                    onChange={handleChange}
-                    placeholder="https://github.com/username"
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
-                  />
-
-                </div>
-
-              {/* SKILLS */}
-              <div>
-
-                <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
-                  <Code2 size={18} />
-                  Skills
-                </label>
-
-                <textarea
-                  rows="4"
-                  name="skills"
-                  value={formData.skills}
-                  onChange={handleChange}
-                  placeholder="React, Node.js, AI/ML, UI/UX..."
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none transition focus:border-cyan-500"
-                />
-
-              </div>
-
+            <div className="inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-200">
+              Registration -> Review -> Assignment
             </div>
 
-            {/* RIGHT SIDE */}
-            <div className="space-y-10">
+            <div>
+              <h1 className="max-w-2xl text-5xl font-black leading-tight sm:text-6xl">
+                {
+                  settings
+                    ?.registrationHeadline ||
+                  "Register once. We will place you where you can do your best work."
+                }
+              </h1>
 
-             {/* EXPERIENCE */}
-                <div>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+                {
+                  settings
+                    ?.registrationSubheadline ||
+                  "Tell us your strengths, interests, and availability. The organizing team will review your profile and assign you to the right project and team later."
+                }
+              </p>
+            </div>
 
-                  <label className="mb-5 flex items-center gap-3 text-xl font-bold">
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                {
+                  icon: User,
+                  title: "Show your strengths",
+                  text:
+                    "Share skills, prior work, and preferred domains clearly.",
+                },
+                {
+                  icon: Layers3,
+                  title: "Get reviewed",
+                  text:
+                    "Admins compare capability, balance teams, and shortlist fairly.",
+                },
+                {
+                  icon: CheckCircle2,
+                  title: "Receive assignment",
+                  text:
+                    "You will be placed into a project and squad after review.",
+                },
+              ].map((item) => {
+                const Icon = item.icon;
 
-                    <Code2 size={22} />
-
-                    Experience Level
-
-                  </label>
-
-                  <div className="grid grid-cols-2 gap-4">
-
-                    {
-                      [
-                        "beginner",
-                        "intermediate",
-                        "advanced",
-                        "open-source",
-                      ].map((level) => (
-
-                        <button
-                          key={level}
-                          type="button"
-                          onClick={() =>
-                            setFormData({
-                              ...formData,
-
-                              experienceLevel:
-                                level,
-                            })
-                          }
-                          className={`rounded-2xl border px-5 py-4 capitalize transition ${
-                            formData.experienceLevel
-                            === level
-                              ? "border-cyan-500 bg-cyan-500/10 text-cyan-300"
-                              : "border-white/10 bg-white/[0.03] hover:border-cyan-500/40 hover:bg-white/[0.05]"
-                          }`}
-                        >
-
-                          {
-                            level.replace(
-                              "-",
-                              " "
-                            )
-                          }
-
-                        </button>
-                      ))
-                    }
-
+                return (
+                  <div
+                    key={item.title}
+                    className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl"
+                  >
+                    <Icon
+                      className="mb-4 text-cyan-300"
+                      size={24}
+                    />
+                    <h2 className="text-lg font-bold">
+                      {item.title}
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      {item.text}
+                    </p>
                   </div>
+                );
+              })}
+            </div>
 
+            <div className="rounded-[2rem] border border-cyan-500/20 bg-cyan-500/8 p-6">
+              <div className="flex items-start gap-4">
+                <Clock3
+                  className="mt-1 text-cyan-300"
+                  size={22}
+                />
+                <div>
+                  <h2 className="text-xl font-bold text-cyan-200">
+                    Before you submit
+                  </h2>
+                  <p className="mt-2 text-sm leading-7 text-slate-300">
+                    {
+                      settings
+                        ?.registrationNotice ||
+                      "Public projects are showcase previews. Final project allocation happens after registrations are reviewed."
+                    }
+                  </p>
+                  {settings?.registrationDeadline && (
+                    <p className="mt-3 text-sm text-cyan-100">
+                      Registration deadline:
+                      {" "}
+                      {new Date(
+                        settings.registrationDeadline
+                      ).toLocaleString()}
+                    </p>
+                  )}
+                  {settings?.contactEmail && (
+                    <p className="mt-2 text-sm text-slate-300">
+                      Questions:
+                      {" "}
+                      <a
+                        href={`mailto:${settings.contactEmail}`}
+                        className="text-cyan-200 underline decoration-cyan-400/40 underline-offset-4"
+                      >
+                        {settings.contactEmail}
+                      </a>
+                    </p>
+                  )}
                 </div>
+              </div>
+            </div>
 
-              {/* INFO BOX */}
-              <div className="rounded-3xl border border-cyan-500/20 bg-cyan-500/5 p-6">
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
+              <h2 className="text-xl font-bold">
+                What makes a strong submission?
+              </h2>
+              <div className="mt-5 space-y-4 text-sm leading-7 text-slate-300">
+                <p>
+                  Be honest about your current level and consistent about your availability.
+                </p>
+                <p>
+                  Mention practical skills, coursework, open-source work, design ability, or hackathon experience.
+                </p>
+                <p>
+                  Use the "Why do you want to join?" section to show energy, curiosity, and commitment.
+                </p>
+              </div>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  to="/projects"
+                  className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:border-cyan-400/30 hover:text-cyan-200"
+                >
+                  Explore showcase projects
+                </Link>
+              </div>
+            </div>
+          </motion.section>
 
-                <h3 className="mb-3 text-lg font-bold text-cyan-300">
-                  How Team Selection Works 🚀
+          <motion.section
+            initial={{
+              opacity: 0,
+              scale: 0.97,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+            }}
+            transition={{
+              duration: 0.7,
+            }}
+            className="rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-2xl md:p-10"
+          >
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm uppercase tracking-[0.24em] text-cyan-300">
+                  Participant Profile
+                </p>
+                <h2 className="mt-2 text-3xl font-black">
+                  Build your registration
+                </h2>
+              </div>
+              {isClosed && (
+                <span className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200">
+                  Registration closed
+                </span>
+              )}
+            </div>
+
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-8"
+            >
+              <div className="grid gap-5 md:grid-cols-2">
+                {[
+                  {
+                    icon: User,
+                    name: "name",
+                    label: "Full name",
+                    type: "text",
+                    placeholder:
+                      "Enter your full name",
+                  },
+                  {
+                    icon: Mail,
+                    name: "email",
+                    label: "Email address",
+                    type: "email",
+                    placeholder:
+                      "Enter your email",
+                  },
+                  {
+                    icon: Lock,
+                    name: "password",
+                    label: "Password",
+                    type: "password",
+                    placeholder:
+                      "Create a password",
+                  },
+                  {
+                    icon: Lock,
+                    name: "confirmPassword",
+                    label:
+                      "Confirm password",
+                    type: "password",
+                    placeholder:
+                      "Repeat password",
+                  },
+                ].map((field) => {
+                  const Icon = field.icon;
+
+                  return (
+                    <label
+                      key={field.name}
+                      className="block"
+                    >
+                      <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
+                        <Icon size={16} />
+                        {field.label}
+                      </span>
+                      <input
+                        type={field.type}
+                        name={field.name}
+                        value={
+                          formData[
+                            field.name
+                          ]
+                        }
+                        onChange={
+                          handleChange
+                        }
+                        placeholder={
+                          field.placeholder
+                        }
+                        className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
+                      />
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                {[
+                  "department",
+                  "program",
+                  "roll",
+                  "phone",
+                  "github",
+                  "linkedin",
+                  "portfolio",
+                  "availability",
+                ].map((field) => (
+                  <label
+                    key={field}
+                    className="block"
+                  >
+                    <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200 capitalize">
+                      {field === "github" ? (
+                        <Github size={16} />
+                      ) : (
+                        <Code2 size={16} />
+                      )}
+                      {field
+                        .replace(
+                          "linkedin",
+                          "LinkedIn"
+                        )
+                        .replace(
+                          "availability",
+                          "Weekly availability"
+                        )}
+                    </span>
+                    <input
+                      type="text"
+                      name={field}
+                      value={formData[field]}
+                      onChange={handleChange}
+                      placeholder={
+                        field === "availability"
+                          ? "Example: 6-8 hrs/week"
+                          : `Enter ${field}`
+                      }
+                      className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
+                    />
+                  </label>
+                ))}
+              </div>
+
+              <div className="rounded-[2rem] border border-white/10 bg-[#07101c] p-6">
+                <h3 className="text-xl font-bold">
+                  Capability snapshot
                 </h3>
-
-                <p className="leading-7 text-slate-300">
-                  After registration, you’ll get access to the project dashboard
-                  where you can join specific teams like Frontend, Backend,
-                  AI/ML, UI/UX, DevOps, and more for each selected project.
+                <p className="mt-2 text-sm text-slate-400">
+                  Help us understand your current level and working style.
                 </p>
 
+                <div className="mt-6 grid gap-6">
+                  <div>
+                    <span className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-200">
+                      <Code2 size={16} />
+                      Experience level
+                    </span>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {EXPERIENCE_LEVELS.map(
+                        (level) => (
+                          <button
+                            key={level}
+                            type="button"
+                            onClick={() =>
+                              setFormData(
+                                (
+                                  current
+                                ) => ({
+                                  ...current,
+                                  experienceLevel:
+                                    level,
+                                })
+                              )
+                            }
+                            className={`rounded-2xl border px-4 py-4 text-left capitalize transition ${
+                              formData.experienceLevel
+                              === level
+                                ? "border-cyan-400 bg-cyan-400/10 text-cyan-100"
+                                : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-cyan-400/30"
+                            }`}
+                          >
+                            {level.replace(
+                              "-",
+                              " "
+                            )}
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  <label className="block">
+                    <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
+                      <Code2 size={16} />
+                      Skills
+                    </span>
+                    <textarea
+                      rows="3"
+                      name="skills"
+                      value={formData.skills}
+                      onChange={handleChange}
+                      placeholder="React, Node.js, Figma, Python, UI design, research..."
+                      className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
+                      <Code2 size={16} />
+                      Prior experience
+                    </span>
+                    <textarea
+                      rows="4"
+                      name="priorExperience"
+                      value={
+                        formData.priorExperience
+                      }
+                      onChange={handleChange}
+                      placeholder="Mention projects, internships, hackathons, coursework, or anything else that reflects your capability."
+                      className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
+                    />
+                  </label>
+                </div>
               </div>
 
-              {/* SUBMIT BUTTON */}
-              {
-                  error && (
+              <div className="grid gap-6 lg:grid-cols-2">
+                <div className="rounded-[2rem] border border-white/10 bg-[#07101c] p-6">
+                  <h3 className="text-xl font-bold">
+                    Preferred domains
+                  </h3>
+                  <p className="mt-2 text-sm text-slate-400">
+                    Choose the areas where you want to contribute.
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    {DOMAIN_OPTIONS.map(
+                      (domain) => (
+                        <button
+                          key={domain}
+                          type="button"
+                          onClick={() =>
+                            toggleMultiSelect(
+                              "preferredDomains",
+                              domain
+                            )
+                          }
+                          className={`rounded-full px-4 py-3 text-sm font-medium transition ${
+                            formData.preferredDomains.includes(
+                              domain
+                            )
+                              ? "bg-cyan-400/15 text-cyan-100 ring-1 ring-cyan-300/40"
+                              : "bg-white/5 text-slate-300 hover:bg-white/10"
+                          }`}
+                        >
+                          {domain}
+                        </button>
+                      )
+                    )}
+                  </div>
+                </div>
 
-                    <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm text-red-300">
+                <div className="rounded-[2rem] border border-white/10 bg-[#07101c] p-6">
+                  <h3 className="text-xl font-bold">
+                    Preferred roles
+                  </h3>
+                  <p className="mt-2 text-sm text-slate-400">
+                    Tell us which kind of contribution feels strongest to you.
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    {ROLE_OPTIONS.map(
+                      (role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() =>
+                            toggleMultiSelect(
+                              "preferredRoles",
+                              role
+                            )
+                          }
+                          className={`rounded-full px-4 py-3 text-sm font-medium transition ${
+                            formData.preferredRoles.includes(
+                              role
+                            )
+                              ? "bg-fuchsia-400/15 text-fuchsia-100 ring-1 ring-fuchsia-300/40"
+                              : "bg-white/5 text-slate-300 hover:bg-white/10"
+                          }`}
+                        >
+                          {role.replaceAll(
+                            "-",
+                            " "
+                          )}
+                        </button>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
 
-                      {error}
+              <label className="block rounded-[2rem] border border-white/10 bg-[#07101c] p-6">
+                <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
+                  <Layers3 size={16} />
+                  Why do you want to join?
+                </span>
+                <textarea
+                  rows="4"
+                  name="whyJoin"
+                  value={formData.whyJoin}
+                  onChange={handleChange}
+                  placeholder="Tell us what excites you, what kind of work you want to do, and how you want to grow through SoC."
+                  className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
+                />
+              </label>
 
-                    </div>
-                  )
-              }<button
-                type="submit"
-                disabled={loading}
-                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-5 text-lg font-bold transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(34,211,238,0.25)] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {
-                  loading
-                    ? "Creating Account..."
-                    : "Register Now"
-                }
-                <ArrowRight size={20} />
-              </button>
+              {error && (
+                <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm text-red-200">
+                  {error}
+                </div>
+              )}
 
-            </div>
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="text-sm leading-6 text-slate-400">
+                  By submitting, you are asking the organizing team to review your profile and assign you later.
+                  {settings?.eligibility && (
+                    <span className="block mt-2 text-slate-300">
+                      Eligibility:
+                      {" "}
+                      {settings.eligibility}
+                    </span>
+                  )}
+                </div>
 
-          </form>
-
-        </motion.div>
-
+                <button
+                  type="submit"
+                  disabled={loading || isClosed}
+                  className="flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-8 py-4 text-lg font-bold transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loading
+                    ? "Submitting..."
+                    : "Submit registration"}
+                  <ArrowRight size={18} />
+                </button>
+              </div>
+            </form>
+          </motion.section>
+        </div>
       </div>
-
     </div>
   );
 };
