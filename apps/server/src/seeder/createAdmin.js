@@ -1,3 +1,4 @@
+// SEEDER TO CREATE ADMIN USER 
 import mongoose from "mongoose";
 
 import dotenv from "dotenv";
@@ -28,7 +29,13 @@ const createAdmin =
       // CHECK EXISTING
       const existingAdmin =
         await User.findOne({
+<<<<<<< Updated upstream
           email: adminEmail,
+=======
+          email:
+            // "admin@soc.com",
+              "soc.ccpc@gmail.com",
+>>>>>>> Stashed changes
         });
 
       if (existingAdmin) {
@@ -43,7 +50,12 @@ const createAdmin =
       // HASH PASSWORD
       const hashedPassword =
         await bcrypt.hash(
+<<<<<<< Updated upstream
           adminPassword,
+=======
+          // "admin123",
+          "SOC@CCPC2026#Admin",
+>>>>>>> Stashed changes
           10
         );
 
@@ -52,7 +64,12 @@ const createAdmin =
         await User.create({
           name: "Admin",
 
+<<<<<<< Updated upstream
           email: adminEmail,
+=======
+          email:
+            "soc.ccpc@gmail.com",
+>>>>>>> Stashed changes
 
           password:
             hashedPassword,
