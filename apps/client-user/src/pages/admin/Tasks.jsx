@@ -1,193 +1,443 @@
 import {
   useEffect,
+  useEffectEvent,
   useState,
 } from "react";
 import {
   CheckCircle2,
-  Clock3,
   ClipboardList,
+  RotateCcw,
 } from "lucide-react";
 
+import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import { Card } from "../../components/ui/Card";
+import EmptyState from "../../components/ui/EmptyState";
+import {
+  FieldLabel,
+  InlineMessage,
+  Textarea,
+} from "../../components/ui/Field";
+import {
+  PageHeader,
+  PageShell,
+} from "../../components/ui/PageChrome";
+import { useToast } from "../../components/ui/ToastContext";
+import {
+  normalizeTaskStatus,
+  taskStatusLabels,
+  taskStatusTones,
+} from "../../constants/workflow";
+import { getApiErrorMessage } from "../../services/apiError";
 import AdminAPI from "../../services/adminApi";
 
 const Tasks = () => {
+  const showToast = useToast();
+
   const [tasks, setTasks] =
     useState([]);
+  const [reviewNotes, setReviewNotes] =
+    useState({});
+  const [loading, setLoading] =
+    useState(true);
+  const [error, setError] =
+    useState("");
+  const [reviewingId, setReviewingId] =
+    useState("");
 
-  useEffect(() => {
-    async function fetchTasks() {
-      try {
-        const response =
-          await AdminAPI.get(
-            "/tasks"
-          );
-        setTasks(response.data);
-      } catch (error) {
-        console.error(error);
-      }
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response =
+        await AdminAPI.get(
+          "/tasks"
+        );
+      setTasks(response.data);
+    } catch (fetchError) {
+      setTasks([]);
+      setError(
+        getApiErrorMessage(
+          fetchError,
+          "Unable to load tasks right now."
+        )
+      );
+    } finally {
+      setLoading(false);
     }
-
-    fetchTasks();
-  }, []);
-
-  const refreshTasks = async () => {
-    const response =
-      await AdminAPI.get("/tasks");
-    setTasks(response.data);
   };
 
-  const approveTask = async (
-    id
+  const loadTasksOnMount =
+    useEffectEvent(() => {
+      fetchTasks();
+    });
+
+  useEffect(() => {
+    const timer =
+      window.setTimeout(() => {
+        loadTasksOnMount();
+      }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  const reviewTask = async (
+    taskId,
+    status
   ) => {
     try {
-      await AdminAPI.put(
-        `/tasks/${id}/approve`
+      setReviewingId(`${taskId}:${status}`);
+      const response =
+        await AdminAPI.put(
+          `/tasks/${taskId}/review`,
+          {
+            status,
+            reviewNote:
+              reviewNotes[taskId] || "",
+          }
+        );
+      setTasks((current) =>
+        current.map((task) =>
+          task._id === taskId
+            ? response.data.task
+            : task
+        )
       );
-      await refreshTasks();
-    } catch (error) {
-      console.error(error);
+      showToast({
+        tone:
+          status === "approved"
+            ? "success"
+            : "warning",
+        title:
+          status === "approved"
+            ? "Task approved"
+            : "Task sent back",
+        description:
+          response.data.message,
+      });
+    } catch (reviewError) {
+      const message =
+        reviewError.response?.data
+          ?.message ||
+        "Unable to review this task.";
+      showToast({
+        tone: "error",
+        title:
+          "Review failed",
+        description: message,
+      });
+    } finally {
+      setReviewingId("");
     }
   };
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="text-5xl font-black">
-          Task Management
-        </h1>
-        <p className="mt-3 text-slate-400">
-          Monitor progress across assigned teams and step in when submitted work needs approval.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        badge="Task review"
+        title="Task management"
+        description="Monitor progress across assigned teams, review submitted work, and send it back cleanly when another pass is needed."
+      />
 
-      <div className="space-y-6">
-        {tasks.map((task) => (
-          <div
-            key={task._id}
-            className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-7"
-          >
-            <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <h2 className="text-3xl font-black">
-                  {task.title}
-                </h2>
-                <p className="mt-3 max-w-3xl text-slate-400">
-                  {task.description}
-                </p>
-              </div>
+      {error && (
+        <InlineMessage tone="error">
+          {error}
+        </InlineMessage>
+      )}
 
-              <ClipboardList
-                size={30}
-                className="text-cyan-400"
-              />
-            </div>
+      {loading ? (
+        <div className="space-y-6">
+          {Array.from({
+            length: 4,
+          }).map((_, index) => (
+            <Card
+              key={index}
+              className="soc-skeleton h-80"
+            />
+          ))}
+        </div>
+      ) : tasks.length === 0 ? (
+        error ? (
+          <EmptyState
+            title="Task board unavailable"
+            description="Task review data could not be loaded right now."
+            action={{
+              label: "Try again",
+              onClick: fetchTasks,
+            }}
+          />
+        ) : (
+          <EmptyState
+            title="No tasks yet"
+            description="Tasks will appear here once project leaders begin assigning work."
+            action={{
+              label: "Refresh list",
+              onClick: fetchTasks,
+              variant:
+                "secondary",
+            }}
+          />
+        )
+      ) : (
+        <div className="space-y-6">
+          {tasks.map((task) => {
+            const normalizedStatus =
+              normalizeTaskStatus(
+                task.status
+              );
 
-            <div className="mb-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl bg-[#07101c] p-5">
-                <p className="mb-2 text-sm text-slate-400">
-                  Project
-                </p>
-                <h3 className="font-bold">
-                  {task.project?.title}
-                </h3>
-              </div>
-
-              <div className="rounded-2xl bg-[#07101c] p-5">
-                <p className="mb-2 text-sm text-slate-400">
-                  Assigned To
-                </p>
-                <h3 className="font-bold">
-                  {task.assignedTo?.name}
-                </h3>
-              </div>
-
-              <div className="rounded-2xl bg-[#07101c] p-5">
-                <p className="mb-2 text-sm text-slate-400">
-                  Created By
-                </p>
-                <h3 className="font-bold">
-                  {task.createdBy?.name}
-                </h3>
-              </div>
-
-              <div className="rounded-2xl bg-[#07101c] p-5">
-                <p className="mb-2 text-sm text-slate-400">
-                  Deadline
-                </p>
-                <h3 className="font-bold">
-                  {task.deadline
-                    ? new Date(
-                        task.deadline
-                      ).toLocaleDateString()
-                    : "No deadline"}
-                </h3>
-              </div>
-            </div>
-
-            <div className="mb-6 flex flex-wrap gap-3">
-              <span className="rounded-full bg-fuchsia-500/10 px-4 py-2 text-sm text-fuchsia-100">
-                {task.taskType}
-              </span>
-              <span
-                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm ${
-                  task.status ===
-                  "approved"
-                    ? "bg-emerald-500/10 text-emerald-100"
-                    : "bg-yellow-500/10 text-yellow-100"
-                }`}
+            return (
+              <Card
+                key={task._id}
+                className="p-7"
               >
-                {task.status ===
-                "approved" ? (
-                  <CheckCircle2 size={16} />
-                ) : (
-                  <Clock3 size={16} />
-                )}
-                {task.status}
-              </span>
-            </div>
-
-            {task.submissionLinks
-              ?.length > 0 && (
-              <div className="mb-6">
-                <h3 className="mb-4 text-xl font-bold">
-                  Submission Links
-                </h3>
-                <div className="space-y-3">
-                  {task.submissionLinks.map(
-                    (link, index) => (
-                      <a
-                        key={`${link.url}-${index}`}
-                        href={link.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block rounded-2xl bg-cyan-500/10 px-5 py-4 text-cyan-300 transition hover:bg-cyan-500/20"
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <div className="flex flex-wrap gap-2.5">
+                      <Badge
+                        tone="default"
                       >
-                        {link.title}
-                      </a>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
+                        {task.taskType}
+                      </Badge>
+                      <Badge
+                        tone={
+                          taskStatusTones[
+                            normalizedStatus
+                          ] || "default"
+                        }
+                      >
+                        {
+                          taskStatusLabels[
+                            normalizedStatus
+                          ]
+                        }
+                      </Badge>
+                    </div>
 
-            {task.status ===
-              "submitted" && (
-              <button
-                type="button"
-                onClick={() =>
-                  approveTask(
-                    task._id
-                  )
-                }
-                className="rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-8 py-4 font-bold"
-              >
-                Approve task
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+                    <h2 className="mt-4 text-2xl font-semibold text-[var(--soc-ink)]">
+                      {task.title}
+                    </h2>
+                    <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--soc-text-muted)]">
+                      {task.description}
+                    </p>
+                  </div>
+
+                  <ClipboardList
+                    size={28}
+                    className="text-[var(--soc-teal)]"
+                  />
+                </div>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <Card className="p-4">
+                    <p className="text-sm text-[var(--soc-text-muted)]">
+                      Project
+                    </p>
+                    <h3 className="mt-2 font-semibold text-[var(--soc-ink)]">
+                      {task.project?.title}
+                    </h3>
+                  </Card>
+                  <Card className="p-4">
+                    <p className="text-sm text-[var(--soc-text-muted)]">
+                      Assigned to
+                    </p>
+                    <h3 className="mt-2 font-semibold text-[var(--soc-ink)]">
+                      {task.assignedTo?.name}
+                    </h3>
+                  </Card>
+                  <Card className="p-4">
+                    <p className="text-sm text-[var(--soc-text-muted)]">
+                      Created by
+                    </p>
+                    <h3 className="mt-2 font-semibold text-[var(--soc-ink)]">
+                      {task.createdBy?.name}
+                    </h3>
+                  </Card>
+                  <Card className="p-4">
+                    <p className="text-sm text-[var(--soc-text-muted)]">
+                      Deadline
+                    </p>
+                    <h3 className="mt-2 font-semibold text-[var(--soc-ink)]">
+                      {task.deadline
+                        ? new Date(
+                            task.deadline
+                          ).toLocaleDateString()
+                        : "No deadline"}
+                    </h3>
+                  </Card>
+                </div>
+
+                {task.submissionLinks
+                  ?.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold text-[var(--soc-ink)]">
+                      Submission links
+                    </h3>
+                    <div className="mt-3 space-y-3">
+                      {task.submissionLinks.map(
+                        (
+                          link,
+                          index
+                        ) => (
+                          <a
+                            key={`${link.url}-${index}`}
+                            href={link.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block rounded-[1.35rem] border border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] px-4 py-3 text-sm text-[var(--soc-teal)] transition hover:bg-white"
+                          >
+                            {link.title}
+                          </a>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {task.comments?.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold text-[var(--soc-ink)]">
+                      Recent comments
+                    </h3>
+                    <div className="mt-3 space-y-3">
+                      {task.comments
+                        .slice(-3)
+                        .reverse()
+                        .map((comment) => (
+                          <Card
+                            key={comment._id}
+                            className="p-4"
+                          >
+                            <p className="text-sm font-semibold text-[var(--soc-ink)]">
+                              {comment.author
+                                ?.name ||
+                                "Unknown"}
+                            </p>
+                            <p className="mt-2 text-sm leading-7 text-[var(--soc-text-muted)]">
+                              {comment.message}
+                            </p>
+                          </Card>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {task.activity?.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold text-[var(--soc-ink)]">
+                      Activity trail
+                    </h3>
+                    <div className="mt-3 space-y-3">
+                      {task.activity
+                        .slice(-4)
+                        .reverse()
+                        .map(
+                          (
+                            entry,
+                            index
+                          ) => (
+                            <Card
+                              key={`${entry.type}-${entry.createdAt}-${index}`}
+                              className="p-4"
+                            >
+                              <p className="text-sm font-semibold text-[var(--soc-ink)]">
+                                {entry.actor
+                                  ?.name ||
+                                  "System"}
+                              </p>
+                              <p className="mt-2 text-sm leading-7 text-[var(--soc-text-muted)]">
+                                {entry.message ||
+                                  "Activity recorded."}
+                              </p>
+                            </Card>
+                          )
+                        )}
+                    </div>
+                  </div>
+                )}
+
+                {normalizedStatus ===
+                  "submitted" && (
+                  <div className="mt-6 space-y-4">
+                    <label className="block">
+                      <FieldLabel>
+                        Review note
+                      </FieldLabel>
+                      <Textarea
+                        rows="3"
+                        value={
+                          reviewNotes[
+                            task._id
+                          ] || ""
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          setReviewNotes(
+                            (current) => ({
+                              ...current,
+                              [task._id]:
+                                event
+                                  .target
+                                  .value,
+                            })
+                          )
+                        }
+                        placeholder="Share approval context or explain what needs more work."
+                      />
+                    </label>
+
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        type="button"
+                        variant="success"
+                        loading={
+                          reviewingId ===
+                          `${task._id}:approved`
+                        }
+                        onClick={() =>
+                          reviewTask(
+                            task._id,
+                            "approved"
+                          )
+                        }
+                      >
+                        <CheckCircle2
+                          size={16}
+                        />
+                        Approve task
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="danger"
+                        loading={
+                          reviewingId ===
+                          `${task._id}:rejected`
+                        }
+                        onClick={() =>
+                          reviewTask(
+                            task._id,
+                            "rejected"
+                          )
+                        }
+                      >
+                        <RotateCcw
+                          size={16}
+                        />
+                        Send back
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </PageShell>
   );
 };
 

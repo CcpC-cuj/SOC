@@ -1,4 +1,8 @@
-import { useEffect } from "react";
+import {
+  Suspense,
+  lazy,
+  useEffect,
+} from "react";
 import {
   Route,
   Routes,
@@ -36,6 +40,31 @@ import Leaders from "./pages/admin/Leaders";
 import AdminProjectDetails from "./pages/admin/AdminProjectDetails";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
+
+const ThemeBrief = lazy(() =>
+  import("./pages/ThemeBrief")
+);
+const ThemeTokens = lazy(() =>
+  import("./pages/ThemeTokens")
+);
+const ThemeTypography = lazy(() =>
+  import("./pages/ThemeTypography")
+);
+const ThemeStyleTile = lazy(() =>
+  import("./pages/ThemeStyleTile")
+);
+const ThemeLayoutRules = lazy(() =>
+  import("./pages/ThemeLayoutRules")
+);
+const ThemeAssets = lazy(() =>
+  import("./pages/ThemeAssets")
+);
+const ThemeBackgrounds = lazy(() =>
+  import("./pages/ThemeBackgrounds")
+);
+const ThemeMotion = lazy(() =>
+  import("./pages/ThemeMotion")
+);
 
 const App = () => {
   useEffect(() => {
@@ -184,6 +213,142 @@ const App = () => {
         element={
           <MainLayout>
             <ProjectDetails />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/theme-brief"
+        element={
+          <MainLayout>
+            <Suspense
+              fallback={
+                <div className="mx-auto max-w-5xl px-6 py-20 text-center text-sm text-[var(--soc-text-muted)]">
+                  Loading theme brief...
+                </div>
+              }
+            >
+              <ThemeBrief />
+            </Suspense>
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/theme-tokens"
+        element={
+          <MainLayout>
+            <Suspense
+              fallback={
+                <div className="mx-auto max-w-5xl px-6 py-20 text-center text-sm text-[var(--soc-text-muted)]">
+                  Loading theme tokens...
+                </div>
+              }
+            >
+              <ThemeTokens />
+            </Suspense>
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/theme-typography"
+        element={
+          <MainLayout>
+            <Suspense
+              fallback={
+                <div className="mx-auto max-w-5xl px-6 py-20 text-center text-sm text-[var(--soc-text-muted)]">
+                  Loading typography spec...
+                </div>
+              }
+            >
+              <ThemeTypography />
+            </Suspense>
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/theme-style-tile"
+        element={
+          <MainLayout>
+            <Suspense
+              fallback={
+                <div className="mx-auto max-w-5xl px-6 py-20 text-center text-sm text-[var(--soc-text-muted)]">
+                  Loading style tile...
+                </div>
+              }
+            >
+              <ThemeStyleTile />
+            </Suspense>
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/theme-layout-rules"
+        element={
+          <MainLayout>
+            <Suspense
+              fallback={
+                <div className="mx-auto max-w-5xl px-6 py-20 text-center text-sm text-[var(--soc-text-muted)]">
+                  Loading layout rules...
+                </div>
+              }
+            >
+              <ThemeLayoutRules />
+            </Suspense>
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/theme-assets"
+        element={
+          <MainLayout>
+            <Suspense
+              fallback={
+                <div className="mx-auto max-w-5xl px-6 py-20 text-center text-sm text-[var(--soc-text-muted)]">
+                  Loading asset library...
+                </div>
+              }
+            >
+              <ThemeAssets />
+            </Suspense>
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/theme-backgrounds"
+        element={
+          <MainLayout>
+            <Suspense
+              fallback={
+                <div className="mx-auto max-w-5xl px-6 py-20 text-center text-sm text-[var(--soc-text-muted)]">
+                  Loading background system...
+                </div>
+              }
+            >
+              <ThemeBackgrounds />
+            </Suspense>
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/theme-motion"
+        element={
+          <MainLayout>
+            <Suspense
+              fallback={
+                <div className="mx-auto max-w-5xl px-6 py-20 text-center text-sm text-[var(--soc-text-muted)]">
+                  Loading motion spec...
+                </div>
+              }
+            >
+              <ThemeMotion />
+            </Suspense>
           </MainLayout>
         }
       />

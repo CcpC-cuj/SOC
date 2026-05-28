@@ -1,29 +1,41 @@
 // MainLayout.jsx
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
+import SceneEnvironment from "../components/common/SceneEnvironment";
 import Footer from "../components/common/Footer";
 
 const MainLayout = ({ children }) => {
+  const location = useLocation();
+  const isHome =
+    location.pathname === "/";
+  const isShowcase =
+    location.pathname === "/projects" ||
+    /^\/projects\/[^/]+$/.test(
+      location.pathname
+    );
+  const useMarketingBackdrop =
+    isHome || isShowcase;
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050816] text-white">
+    <div className="relative min-h-screen overflow-hidden bg-[var(--soc-bg)] text-[var(--soc-ink)]">
+      {useMarketingBackdrop ? (
+        <SceneEnvironment
+          variant="marketing"
+          showLandscape={isHome}
+        />
+      ) : null}
 
-      {/* CONTENT */}
       <div className="relative z-10">
-
-        {/* NAVBAR */}
-        <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
+        <div className="mx-auto w-full max-w-[90rem] px-4 pb-10 pt-4 sm:px-6 lg:px-8 xl:px-10">
           <Navbar />
+
+          <main className="mt-6">
+            {children}
+          </main>
+
+          <Footer />
         </div>
-
-        {/* PAGE */}
-        <main className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
-          {children}
-        </main>
-
-        {/* FOOTER */}
-        <Footer />
-
       </div>
-
     </div>
   );
 };

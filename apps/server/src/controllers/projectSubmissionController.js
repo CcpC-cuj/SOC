@@ -1,6 +1,58 @@
 import Project from "../models/Project.js";
 import ProjectMember from "../models/ProjectMember.js";
 import ProjectSubmission from "../models/ProjectSubmission.js";
+import {
+  canEditSubmission,
+  canReviewSubmission,
+  isProjectWorkspaceWritable,
+} from "../utils/workflowRules.js";
+
+const getSubmissionUserFields = (
+  isAdmin
+) => (isAdmin ? "name email" : "name");
+
+const getSubmissionActorFields = (
+  isAdmin
+) =>
+  isAdmin
+    ? "name email authority"
+    : "name";
+
+const populateSubmissionQuery = (
+  query,
+  {
+    isAdmin = false,
+  } = {}
+) =>
+  query
+    .populate(
+      "submittedBy",
+      getSubmissionUserFields(
+        isAdmin
+      )
+    )
+    .populate(
+      "revisions.savedBy",
+      getSubmissionUserFields(
+        isAdmin
+      )
+    )
+    .populate(
+      "statusHistory.changedBy",
+      getSubmissionActorFields(
+        isAdmin
+      )
+    );
+
+const appendStatusHistory = (
+  submission,
+  entry
+) => {
+  submission.statusHistory.push({
+    ...entry,
+    changedAt: new Date(),
+  });
+};
 
 const assertProjectAccess = async (
   req,
@@ -32,7 +84,14 @@ export const submitProject = async (
       pptLink,
       demoVideo,
       documentation,
+      milestoneLabel,
+      mode = "draft",
     } = req.body;
+
+    const nextMode =
+      mode === "submitted"
+        ? "submitted"
+        : "draft";
 
     const isLeader =
       await ProjectMember.findOne({
@@ -66,40 +125,108 @@ export const submitProject = async (
       });
     }
 
+    if (
+      !isProjectWorkspaceWritable(
+        project
+      )
+    ) {
+      return res.status(409).json({
+        message:
+          "This workspace is not currently open for submission changes.",
+      });
+    }
+
+    const trimmedMilestone =
+      String(
+        milestoneLabel ||
+          "Final delivery"
+      ).trim() || "Final delivery";
+
     let submission =
       await ProjectSubmission.findOne({
         project: projectId,
       });
 
-    if (submission) {
-      submission.githubRepo =
-        githubRepo;
-      submission.deploymentLink =
-        deploymentLink;
-      submission.pptLink = pptLink;
-      submission.demoVideo =
-        demoVideo;
-      submission.documentation =
-        documentation;
-      submission.status =
-        "submitted";
-
-      await submission.save();
-    } else {
+    if (!submission) {
       submission =
-        await ProjectSubmission.create({
+        new ProjectSubmission({
           project: projectId,
           submittedBy: req.user._id,
-          githubRepo,
-          deploymentLink,
-          pptLink,
-          demoVideo,
-          documentation,
-          status: "submitted",
         });
+    } else if (
+      !canEditSubmission({
+        currentStatus:
+          submission.status,
+        nextStatus: nextMode,
+      })
+    ) {
+      return res.status(409).json({
+        message:
+          submission.status ===
+          "submitted"
+            ? "This milestone is already submitted and locked until an admin reviews it."
+            : "This milestone is no longer editable from the workspace.",
+      });
     }
 
-    return res.json(submission);
+    submission.submittedBy =
+      req.user._id;
+    submission.githubRepo =
+      githubRepo;
+    submission.deploymentLink =
+      deploymentLink;
+    submission.pptLink = pptLink;
+    submission.demoVideo =
+      demoVideo;
+    submission.documentation =
+      documentation;
+    submission.milestoneLabel =
+      trimmedMilestone;
+    submission.status = nextMode;
+    submission.remarks = "";
+
+    submission.revisions.push({
+      milestoneLabel:
+        trimmedMilestone,
+      githubRepo,
+      deploymentLink,
+      pptLink,
+      demoVideo,
+      documentation,
+      mode: nextMode,
+      savedBy: req.user._id,
+      savedAt: new Date(),
+    });
+
+    appendStatusHistory(submission, {
+      status: nextMode,
+      remarks:
+        nextMode === "submitted"
+          ? `Submitted milestone "${trimmedMilestone}".`
+          : `Saved draft "${trimmedMilestone}".`,
+      changedBy: req.user._id,
+    });
+
+    await submission.save();
+
+    const populatedSubmission =
+      await populateSubmissionQuery(
+        ProjectSubmission.findById(
+          submission._id
+        ),
+        {
+          isAdmin: false,
+        }
+      );
+
+    return res.json({
+      message:
+        nextMode === "submitted"
+          ? "Submission sent for review."
+          : "Draft saved.",
+      submission:
+        populatedSubmission,
+    });
   } catch (error) {
     return res.status(500).json({
       message: error.message,
@@ -127,11 +254,15 @@ export const getProjectSubmission =
       }
 
       const submission =
-        await ProjectSubmission.findOne({
-          project: projectId,
-        }).populate(
-          "submittedBy",
-          "name email"
+        await populateSubmissionQuery(
+          ProjectSubmission.findOne({
+            project: projectId,
+          }),
+          {
+            isAdmin:
+              req.user.authority ===
+              "admin",
+          }
         );
 
       return res.json(submission);
@@ -162,8 +293,31 @@ export const reviewSubmission =
         });
       }
 
+      if (
+        !canReviewSubmission({
+          currentStatus:
+            submission.status,
+          nextStatus: status,
+        })
+      ) {
+        return res.status(400).json({
+          message:
+            "Only submitted milestones can be approved or rejected.",
+        });
+      }
+
       submission.status = status;
-      submission.remarks = remarks;
+      submission.remarks = String(
+        remarks || ""
+      ).trim();
+
+      appendStatusHistory(submission, {
+        status,
+        remarks:
+          submission.remarks ||
+          `Submission ${status}.`,
+        changedBy: req.user._id,
+      });
 
       await submission.save();
 
@@ -172,19 +326,28 @@ export const reviewSubmission =
           submission.project
         );
 
-      if (status === "approved") {
+      if (
+        project &&
+        status === "approved"
+      ) {
         project.status =
           "completed";
-      } else if (
-        status === "rejected"
-      ) {
-        project.status = "active";
+        await project.save();
       }
 
-      await project.save();
+      const populatedSubmission =
+        await populateSubmissionQuery(
+          ProjectSubmission.findById(
+            submission._id
+          ),
+          {
+            isAdmin: true,
+          }
+        );
 
       return res.json({
-        submission,
+        submission:
+          populatedSubmission,
         project,
       });
     } catch (error) {
@@ -198,18 +361,19 @@ export const getAllSubmissions =
   async (req, res) => {
     try {
       const submissions =
-        await ProjectSubmission.find()
-          .populate(
-            "project",
-            "title"
-          )
-          .populate(
-            "submittedBy",
-            "name email"
-          )
-          .sort({
-            createdAt: -1,
-          });
+        await populateSubmissionQuery(
+          ProjectSubmission.find()
+            .populate(
+              "project",
+              "title status"
+            )
+            .sort({
+              createdAt: -1,
+            }),
+          {
+            isAdmin: true,
+          }
+        );
 
       return res.json(submissions);
     } catch (error) {

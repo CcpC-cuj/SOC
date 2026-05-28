@@ -5,6 +5,9 @@ import Project from "../models/Project.js";
 import ProjectMember from "../models/ProjectMember.js";
 import Team from "../models/Team.js";
 import User from "../models/User.js";
+import {
+  canAssignToCapacity,
+} from "../utils/workflowRules.js";
 
 const sanitizeRoles = (
   roles = []
@@ -18,6 +21,13 @@ const sanitizeRoles = (
           ROLE_OPTIONS.includes(role)
         )
     : [];
+
+const getProjectMemberUserFields = (
+  isAdmin
+) =>
+  isAdmin
+    ? "name email skills authority experienceLevel department program preferredDomains preferredRoles github"
+    : "name";
 
 const removeUserFromTeams = async (
   userId
@@ -41,6 +51,30 @@ const removeUserFromTeams = async (
       $unset: {
         leader: "",
       },
+    }
+  );
+};
+
+const syncTeamMembers = async (
+  teamId
+) => {
+  if (!teamId) {
+    return null;
+  }
+
+  const memberIds =
+    await ProjectMember.find({
+      team: teamId,
+      status: "active",
+    }).distinct("user");
+
+  return Team.findByIdAndUpdate(
+    teamId,
+    {
+      members: memberIds,
+    },
+    {
+      new: true,
     }
   );
 };
@@ -86,9 +120,9 @@ export const getProjectMembers =
         })
           .populate(
             "user",
-            isAdmin
-              ? "name email skills authority experienceLevel department program preferredDomains preferredRoles github"
-              : "name email skills experienceLevel github"
+            getProjectMemberUserFields(
+              isAdmin
+            )
           )
           .populate(
             "team",
@@ -189,6 +223,26 @@ export const assignMemberToProject =
 
       let team = null;
 
+      const existingMemberships =
+        await ProjectMember.find({
+          user: userId,
+          status: "active",
+        });
+
+      const existingForProject =
+        existingMemberships.find(
+          (membership) =>
+            membership.project.toString()
+            === projectId
+        );
+
+      if (isLeader && !teamId) {
+        return res.status(400).json({
+          message:
+            "Assign the participant to a team before marking them as leader.",
+        });
+      }
+
       if (teamId) {
         team = await Team.findById(
           teamId
@@ -204,20 +258,37 @@ export const assignMemberToProject =
               "Selected team does not belong to this project.",
           });
         }
+
+        const currentTeamCount =
+          await ProjectMember.countDocuments(
+            {
+              project: projectId,
+              team: team._id,
+              status: "active",
+              ...(existingForProject
+                ? {
+                    _id: {
+                      $ne:
+                        existingForProject._id,
+                    },
+                  }
+                : {}),
+            }
+          );
+
+        if (
+          !canAssignToCapacity({
+            currentCount:
+              currentTeamCount,
+            capacity: team.capacity,
+          })
+        ) {
+          return res.status(409).json({
+            message:
+              "That team is already at capacity. Pick another team or increase its size first.",
+          });
+        }
       }
-
-      const existingMemberships =
-        await ProjectMember.find({
-          user: userId,
-          status: "active",
-        });
-
-      const existingForProject =
-        existingMemberships.find(
-          (membership) =>
-            membership.project.toString()
-            === projectId
-        );
 
       const activeMemberCount =
         await ProjectMember.countDocuments(
@@ -239,25 +310,15 @@ export const assignMemberToProject =
         activeMemberCount
         >= project.maxMembers
       ) {
-        user.registrationStatus =
-          "waitlisted";
-        user.adminNotes =
-          String(adminNotes || "").trim();
-        user.assignmentHistory.push({
-          action: "status-updated",
-          status: "waitlisted",
-          note:
-            "Automatically waitlisted because the selected project is full.",
-          project: project._id,
-          changedBy: req.user._id,
-        });
-        await user.save();
-
         return res.status(409).json({
           message:
-            "Project is already full. The participant has been moved to the waitlist.",
+            "Project is already full. Clear a seat or raise the project capacity before assigning this participant.",
         });
       }
+
+      const previousTeamId =
+        existingForProject?.team?.toString() ||
+        null;
 
       for (const membership of existingMemberships) {
         if (
@@ -287,7 +348,7 @@ export const assignMemberToProject =
         normalizedRoles;
       membership.status = "active";
       membership.isLeader =
-        Boolean(isLeader);
+        Boolean(isLeader && team);
       membership.assignedBy =
         req.user._id;
       membership.assignedAt =
@@ -296,26 +357,38 @@ export const assignMemberToProject =
       await membership.save();
 
       if (team) {
-        const uniqueMembers =
-          new Set(
-            team.members.map((memberId) =>
-              memberId.toString()
-            )
+        if (membership.isLeader) {
+          await ProjectMember.updateMany(
+            {
+              project: projectId,
+              team: team._id,
+              status: "active",
+              user: {
+                $ne: user._id,
+              },
+            },
+            {
+              isLeader: false,
+            }
           );
 
-        uniqueMembers.add(
-          user._id.toString()
-        );
-        team.members = [
-          ...uniqueMembers,
-        ];
-
-        if (isLeader) {
           team.leader = user._id;
+        } else if (
+          team.leader?.toString() ===
+          user._id.toString()
+        ) {
+          team.leader = undefined;
         }
+      }
 
+      if (team) {
         await team.save();
       }
+
+      await Promise.all([
+        syncTeamMembers(previousTeamId),
+        syncTeamMembers(team?._id),
+      ]);
 
       user.registrationStatus =
         "assigned";
@@ -389,26 +462,58 @@ export const assignLeader = async (
       });
     }
 
+    if (!member.team) {
+      return res.status(400).json({
+        message:
+          "Assign the member to a team before setting them as leader.",
+      });
+    }
+
+    const team = await Team.findById(
+      member.team
+    );
+
+    if (!team) {
+      return res.status(404).json({
+        message: "Team not found",
+      });
+    }
+
     await ProjectMember.updateMany(
       {
         project: projectId,
+        team: member.team,
+        status: "active",
+        user: {
+          $ne: userId,
+        },
       },
       {
         isLeader: false,
       }
     );
 
+    await Team.updateMany(
+      {
+        project: projectId,
+        leader: userId,
+        _id: {
+          $ne: member.team,
+        },
+      },
+      {
+        $unset: {
+          leader: "",
+        },
+      }
+    );
+
     member.isLeader = true;
     await member.save();
 
-    if (member.team) {
-      await Team.findByIdAndUpdate(
-        member.team,
-        {
-          leader: userId,
-        }
-      );
-    }
+    team.leader = userId;
+    await team.save();
+    await syncTeamMembers(member.team);
 
     return res.json({
       message:

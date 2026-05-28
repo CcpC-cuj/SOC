@@ -17,14 +17,45 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import {
+  Card,
+  CardSection,
+} from "../components/ui/Card";
+import {
+  FieldLabel,
+  InlineMessage,
+  Input,
+} from "../components/ui/Field";
+import { getApiErrorMessage } from "../services/apiError";
 import API from "../services/api";
 import { loginUser } from "../services/authService";
 
+const loginBenefits = [
+  {
+    icon: Sparkles,
+    title: "Clear review visibility",
+    text:
+      "Track application progress, shortlist decisions, and assignment updates from one calm workspace.",
+  },
+  {
+    icon: FolderKanban,
+    title: "Project continuity",
+    text:
+      "Assigned participants can move from account access to team collaboration without switching tools.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Trustworthy account flow",
+    text:
+      "Verification and recovery are integrated so the sign-in experience stays practical and dependable.",
+  },
+];
+
 const Login = () => {
-  const navigate =
-    useNavigate();
-  const location =
-    useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const from =
     location.state?.from ||
@@ -41,6 +72,8 @@ const Login = () => {
     useState(false);
   const [error, setError] =
     useState("");
+  const [serviceError, setServiceError] =
+    useState("");
 
   useEffect(() => {
     async function fetchSettings() {
@@ -50,8 +83,14 @@ const Login = () => {
             "/settings/public"
           );
         setSettings(response.data);
+        setServiceError("");
       } catch (fetchError) {
-        console.error(fetchError);
+        setServiceError(
+          getApiErrorMessage(
+            fetchError,
+            "Unable to load login page settings right now."
+          )
+        );
       }
     }
 
@@ -90,9 +129,10 @@ const Login = () => {
       navigate(from);
     } catch (loginError) {
       setError(
-        loginError.response?.data
-          ?.message ||
+        getApiErrorMessage(
+          loginError,
           "Unable to log you in right now."
+        )
       );
     } finally {
       setLoading(false);
@@ -100,13 +140,8 @@ const Login = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050816] px-4 py-16 text-white sm:px-6 lg:px-8">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute left-0 top-0 h-[26rem] w-[26rem] rounded-full bg-cyan-500/15 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-[30rem] w-[30rem] rounded-full bg-fuchsia-500/10 blur-3xl" />
-      </div>
-
-      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1.05fr]">
+    <div className="min-h-screen py-10 sm:py-14">
+      <div className="mx-auto grid max-w-[88rem] gap-8 px-4 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8 xl:px-10">
         <motion.section
           initial={{
             opacity: 0,
@@ -119,89 +154,87 @@ const Login = () => {
           transition={{
             duration: 0.5,
           }}
-          className="space-y-8"
+          className="space-y-6"
         >
-          <div className="inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200">
-            Sign in to continue your SOC journey
-          </div>
+          <Badge tone="warning">
+            Participant and organizer sign-in
+          </Badge>
 
-          <div>
-            <h1 className="max-w-2xl text-5xl font-black leading-tight sm:text-6xl">
-              Pick up where your team journey left off.
+          <div className="space-y-4">
+            <h1 className="max-w-2xl text-4xl font-semibold tracking-[-0.05em] text-[var(--soc-ink)] sm:text-5xl lg:text-[3.6rem]">
+              Sign in to continue your application and project journey.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              Participants can track review status, check assignments, and open their workspace here. Organizers can also sign in with their admin account.
+            <p className="max-w-2xl text-base leading-8 text-[var(--soc-text-muted)] sm:text-lg">
+              Use your SOC account to check review outcomes, open your
+              workspace, and stay connected to the next step in the program.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              {
-                icon: Sparkles,
-                title: "Review-aware",
-                text:
-                  "Your dashboard reflects the real review and assignment process.",
-              },
-              {
-                icon: FolderKanban,
-                title: "Workspace ready",
-                text:
-                  "Assigned members can jump straight into project work from one place.",
-              },
-              {
-                icon: ShieldCheck,
-                title: "Safer access",
-                text:
-                  "Recovery and verification tools are now built into the account flow.",
-              },
-            ].map((item) => {
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+            {loginBenefits.map((item) => {
               const Icon = item.icon;
 
               return (
-                <div
+                <Card
                   key={item.title}
-                  className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+                  className="p-5"
                 >
                   <Icon
-                    size={22}
-                    className="text-cyan-300"
+                    size={20}
+                    className="text-[var(--soc-teal)]"
                   />
-                  <h2 className="mt-4 text-lg font-bold">
+                  <h2 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-[var(--soc-ink)]">
                     {item.title}
                   </h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                  <p className="mt-2 text-sm leading-7 text-[var(--soc-text-muted)]">
                     {item.text}
                   </p>
-                </div>
+                </Card>
               );
             })}
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-[#081121] p-6">
-            <p className="text-sm uppercase tracking-[0.22em] text-slate-400">
+          <Card strong className="p-6 sm:p-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--soc-ink)]/48">
               Registration notice
             </p>
-            <p className="mt-3 text-slate-300">
+            <p className="mt-3 text-sm leading-7 text-[var(--soc-text-muted)] sm:text-base sm:leading-8">
               {settings
                 ?.registrationNotice ||
                 "Register with your strengths first. The organizing team will review and assign projects later."}
             </p>
-            {settings?.registrationDeadline && (
-              <p className="mt-3 text-sm text-cyan-200">
-                Registration deadline:
-                {" "}
+
+            {settings?.registrationDeadline ? (
+              <p className="mt-4 text-sm text-[var(--soc-teal)]">
+                Registration deadline:{" "}
                 {new Date(
                   settings.registrationDeadline
                 ).toLocaleString()}
               </p>
-            )}
-          </div>
+            ) : null}
+
+            {settings?.codeOfConductUrl ? (
+              <p className="mt-3 text-sm text-[var(--soc-text-muted)]">
+                Participant conduct:{" "}
+                <a
+                  href={
+                    settings.codeOfConductUrl
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-[var(--soc-teal)] underline decoration-[var(--soc-ink)]/20 underline-offset-4"
+                >
+                  Read the code of conduct
+                </a>
+              </p>
+            ) : null}
+          </Card>
         </motion.section>
 
         <motion.section
           initial={{
             opacity: 0,
-            scale: 0.96,
+            scale: 0.98,
           }}
           animate={{
             opacity: 1,
@@ -209,111 +242,127 @@ const Login = () => {
           }}
           transition={{
             duration: 0.5,
-            delay: 0.1,
+            delay: 0.08,
           }}
-          className="rounded-[2.5rem] border border-white/10 bg-white/[0.05] p-8 backdrop-blur-xl sm:p-10"
         >
-          <div className="mb-8">
-            <h2 className="text-4xl font-black">
-              Login
-            </h2>
-            <p className="mt-3 text-slate-400">
-              Use the email and password from your SOC account.
-            </p>
-          </div>
-
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-6"
+          <Card
+            strong
+            className="p-6 sm:p-8 lg:p-10"
           >
-            <label className="block">
-              <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
-                <Mail size={18} />
-                Email address
-              </span>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
-                required
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
-                <Lock size={18} />
-                Password
-              </span>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
-                required
-              />
-            </label>
-
-            {location.state?.from && (
-              <div className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
-                Sign in to continue to the page you were trying to open.
-              </div>
-            )}
-
-            {error && (
-              <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                {error}
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-              <Link
-                to="/forgot-password"
-                className="text-cyan-300 transition hover:text-cyan-100"
-              >
-                Forgot password?
-              </Link>
-              <Link
-                to="/verify-email"
-                className="text-slate-400 transition hover:text-slate-200"
-              >
-                Need to verify your email?
-              </Link>
+            <div className="mb-8 space-y-3 border-b border-[var(--soc-border-soft)] pb-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--soc-ink)]/48">
+                Account access
+              </p>
+              <h2 className="text-3xl font-semibold tracking-[-0.04em] text-[var(--soc-ink)] sm:text-4xl">
+                Login
+              </h2>
+              <p className="max-w-2xl text-sm leading-7 text-[var(--soc-text-muted)] sm:text-base">
+                Enter the email and password linked to your SOC account.
+              </p>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-8 py-4 text-lg font-bold transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6"
             >
-              {loading
-                ? "Logging in..."
-                : "Login to SOC"}
-              <ArrowRight size={18} />
-            </button>
-          </form>
+              <label className="block">
+                <FieldLabel className="mb-3 flex items-center gap-2">
+                  <Mail size={16} />
+                  Email address
+                </FieldLabel>
+                <Input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="you@example.com"
+                  required
+                />
+              </label>
 
-          <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-5 text-sm text-slate-300">
-            New here? Register with your skills and interests first, then let the organizers place you into the right squad.
-            <div className="mt-4 flex flex-wrap gap-4">
-              <Link
-                to="/register"
-                className="font-semibold text-cyan-300 transition hover:text-cyan-100"
+              <label className="block">
+                <FieldLabel className="mb-3 flex items-center gap-2">
+                  <Lock size={16} />
+                  Password
+                </FieldLabel>
+                <Input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  required
+                />
+              </label>
+
+              {location.state?.from ? (
+                <InlineMessage tone="info">
+                  Sign in to continue to the page you were trying to open.
+                </InlineMessage>
+              ) : null}
+
+              {serviceError ? (
+                <InlineMessage tone="warning">
+                  {serviceError}
+                </InlineMessage>
+              ) : null}
+
+              {error ? (
+                <InlineMessage tone="error">
+                  {error}
+                </InlineMessage>
+              ) : null}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                <Link
+                  to="/forgot-password"
+                  className="font-medium text-[var(--soc-teal)] transition hover:text-[var(--soc-ink)]"
+                >
+                  Forgot password?
+                </Link>
+                <Link
+                  to="/verify-email"
+                  className="text-[var(--soc-text-muted)] transition hover:text-[var(--soc-ink)]"
+                >
+                  Need to verify your email?
+                </Link>
+              </div>
+
+              <Button
+                type="submit"
+                block
+                size="lg"
+                loading={loading}
               >
-                Create account
-              </Link>
-              <Link
-                to="/projects"
-                className="font-semibold text-fuchsia-300 transition hover:text-fuchsia-100"
-              >
-                View showcase projects
-              </Link>
-            </div>
-          </div>
+                {loading
+                  ? "Logging in..."
+                  : "Login to SOC"}
+                <ArrowRight size={18} />
+              </Button>
+            </form>
+
+            <CardSection className="mt-8 p-5 sm:p-6">
+              <p className="text-sm leading-7 text-[var(--soc-text-muted)]">
+                New here? Create your account, submit your strengths and
+                interests, and let organizers place you into the right team
+                later.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-4">
+                <Link
+                  to="/register"
+                  className="font-semibold text-[var(--soc-teal)] transition hover:text-[var(--soc-ink)]"
+                >
+                  Create account
+                </Link>
+                <Link
+                  to="/projects"
+                  className="font-semibold text-[var(--soc-teal)] transition hover:text-[var(--soc-ink)]"
+                >
+                  View showcase projects
+                </Link>
+              </div>
+            </CardSection>
+          </Card>
         </motion.section>
       </div>
     </div>

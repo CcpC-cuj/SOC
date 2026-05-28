@@ -1,6 +1,71 @@
 // src/models/Task.js
 
 import mongoose from "mongoose";
+import {
+  TASK_STATUSES,
+} from "../utils/workflowRules.js";
+
+const taskCommentSchema =
+  new mongoose.Schema(
+    {
+      author: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      message: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+    {
+      _id: true,
+    }
+  );
+
+const taskActivitySchema =
+  new mongoose.Schema(
+    {
+      type: {
+        type: String,
+        enum: [
+          "created",
+          "status-changed",
+          "comment-added",
+          "reviewed",
+        ],
+        required: true,
+      },
+      fromStatus: {
+        type: String,
+      },
+      toStatus: {
+        type: String,
+      },
+      message: {
+        type: String,
+        trim: true,
+      },
+      actor: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+    {
+      _id: false,
+    }
+  );
 
 const taskSchema =
   new mongoose.Schema(
@@ -73,12 +138,11 @@ const taskSchema =
         type: String,
 
         enum: [
+          ...TASK_STATUSES,
           "pending",
-          "submitted",
-          "approved",
         ],
 
-        default: "pending",
+        default: "todo",
       },
 
       submissionLinks: [
@@ -91,6 +155,16 @@ const taskSchema =
 
       remarks: {
         type: String,
+      },
+
+      comments: {
+        type: [taskCommentSchema],
+        default: [],
+      },
+
+      activity: {
+        type: [taskActivitySchema],
+        default: [],
       },
     },
     {

@@ -1,11 +1,13 @@
 import express from "express";
 
 import {
+  addTaskComment,
   approveTask,
   createTask,
   getAllTasks,
   getMyTasks,
   getProjectTasks,
+  reviewTask,
   updateTaskStatus,
 } from "../controllers/taskController.js";
 import {
@@ -45,6 +47,19 @@ router.put(
   protect,
   adminOnly,
   approveTask
+);
+
+router.put(
+  "/:id/review",
+  protect,
+  adminOnly,
+  reviewTask
+);
+
+router.post(
+  "/:id/comments",
+  protect,
+  addTaskComment
 );
 
 router.get(

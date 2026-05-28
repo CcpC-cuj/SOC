@@ -5,6 +5,7 @@ import {
   exportUsersCsv,
   getMyProfile,
   getProfileDashboard,
+  getUserById,
   getUsers,
   sendAnnouncement,
   updateProfile,
@@ -52,22 +53,21 @@ router.delete(
   deleteUser
 );
 
-router.get(
-  "/profile",
-  protect,
-  getMyProfile
-);
+router.get("/profile", protect, getMyProfile);
 
-router.put(
-  "/profile",
-  protect,
-  updateProfile
-);
+router.put("/profile", protect, updateProfile);
 
 router.get(
   "/profile/dashboard",
   protect,
   getProfileDashboard
+);
+
+router.get(
+  "/:id",
+  protect,
+  adminOnly,
+  getUserById
 );
 
 export default router;

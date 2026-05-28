@@ -5,8 +5,10 @@ from "express";
 
 import {
   createProject,
-  getProjects,
   getProject,
+  getProjects,
+  getPublicProject,
+  getPublicProjects,
   deleteProject,
   updateProject,
 } from "../controllers/projectController.js";
@@ -21,13 +23,26 @@ const router =
 
 // GET ALL PROJECTS
 router.get(
+  "/public",
+  getPublicProjects
+);
+
+router.get(
+  "/public/:id",
+  getPublicProject
+);
+
+// GET ALL INTERNAL PROJECTS
+router.get(
   "/",
+  protect,
   getProjects
 );
 
-// GET SINGLE PROJECT
+// GET SINGLE INTERNAL PROJECT
 router.get(
   "/:id",
+  protect,
   getProject
 );
 

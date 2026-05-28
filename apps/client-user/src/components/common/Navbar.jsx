@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   Link,
   NavLink,
-  useLocation,
 } from "react-router-dom";
 import {
   FolderKanban,
@@ -22,16 +21,22 @@ import {
   getStoredAdmin,
   getStoredUser,
 } from "../../services/authStorage";
+import Badge from "../ui/Badge";
+import { buttonStyles } from "../ui/buttonStyles";
+
+const brandMarkStyles =
+  "flex h-11 w-11 items-center justify-center rounded-[0.95rem] border border-[var(--soc-border-soft)] bg-white text-sm font-semibold tracking-[0.14em] text-[var(--soc-ink)] shadow-[var(--soc-shadow-soft)]";
+
+const linkBaseStyles =
+  "flex items-center gap-2 rounded-[0.875rem] px-3.5 py-2.5 text-sm font-medium transition-colors";
 
 const Navbar = () => {
-  const location = useLocation();
   const [mobileMenu, setMobileMenu] =
     useState(false);
 
   const user =
     getStoredUser() ||
     getStoredAdmin();
-
   const isAdmin =
     user?.authority === "admin";
 
@@ -72,6 +77,9 @@ const Navbar = () => {
       : []),
   ];
 
+  const closeMobileMenu = () =>
+    setMobileMenu(false);
+
   const handleLogout = () => {
     if (isAdmin) {
       clearAdminSession();
@@ -79,119 +87,136 @@ const Navbar = () => {
       clearAllSessions();
     }
 
-    setMobileMenu(false);
+    closeMobileMenu();
     window.location.href = "/";
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050816]/80 backdrop-blur-xl">
-      <div className="flex h-20 items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
-        <Link
-          to="/"
-          className="flex items-center gap-3"
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 text-xl font-black shadow-lg shadow-cyan-500/20">
-            S
-          </div>
-
-          <div>
-            <h1 className="text-2xl font-black tracking-wide">
-              <span className="bg-gradient-to-r from-cyan-400 to-fuchsia-500 bg-clip-text text-transparent">
-                SoC
-              </span>
-            </h1>
-            <p className="-mt-1 text-xs text-slate-400">
-              Seasons of Code
-            </p>
-          </div>
-        </Link>
-
-        <nav className="hidden items-center gap-2 lg:flex">
-          {navLinks.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                className={({
-                  isActive,
-                }) =>
-                  `flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-medium transition-all duration-300 ${
-                    isActive
-                      ? "bg-cyan-500/10 text-cyan-300"
-                      : "text-slate-300 hover:bg-white/5 hover:text-cyan-200"
-                  }`
-                }
-              >
-                {Icon && <Icon size={18} />}
-                {item.name}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          {user ? (
-            <>
-              {isAdmin && (
-                <div className="hidden items-center gap-2 rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/10 px-4 py-2 text-sm font-semibold text-fuchsia-200 md:flex">
-                  <Shield size={16} />
-                  Admin
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="hidden items-center gap-2 rounded-2xl border border-white/10 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-cyan-400/30 hover:text-cyan-200 md:flex"
-              >
-                <LogOut size={18} />
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                className="hidden items-center gap-2 rounded-2xl border border-white/10 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-cyan-400/30 hover:text-cyan-200 md:flex"
-              >
-                <LogIn size={18} />
-                Login
-              </Link>
-
-              <Link
-                to="/register"
-                className="hidden items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-5 py-3 text-sm font-bold text-white md:flex"
-              >
-                <UserPlus size={18} />
-                Register
-              </Link>
-            </>
-          )}
-
-          <button
-            type="button"
-            onClick={() =>
-              setMobileMenu(
-                !mobileMenu
-              )
-            }
-            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 lg:hidden"
+    <header className="sticky top-4 z-50">
+      <div className="rounded-[1.2rem] border border-[var(--soc-border-soft)] bg-white/88 px-4 py-3 shadow-[var(--soc-shadow-soft)] backdrop-blur-md sm:px-5 lg:px-6">
+        <div className="flex items-center justify-between gap-4">
+          <Link
+            to="/"
+            className="flex min-w-0 items-center gap-3"
           >
-            {mobileMenu ? (
-              <X size={22} />
-            ) : (
-              <Menu size={22} />
-            )}
-          </button>
-        </div>
-      </div>
+            <div className={brandMarkStyles}>
+              SOC
+            </div>
 
-      {mobileMenu && (
-        <div className="border-t border-white/10 bg-[#050816]/95 backdrop-blur-xl lg:hidden">
-          <div className="px-4 py-6 sm:px-6 md:px-8">
-            <div className="flex flex-col gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-base font-semibold tracking-[-0.02em] text-[var(--soc-ink)]">
+                Season of Code
+              </p>
+              <p className="truncate text-xs uppercase tracking-[0.14em] text-[var(--soc-ink)]/52">
+                Student Builders Platform
+              </p>
+            </div>
+          </Link>
+
+          <nav className="hidden items-center gap-1 lg:flex">
+            {navLinks.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.name}
+                  to={item.path}
+                  className={({
+                    isActive,
+                  }) =>
+                    `${linkBaseStyles} ${
+                      isActive
+                        ? "bg-[var(--soc-surface-cool)] text-[var(--soc-ink)]"
+                        : "text-[var(--soc-ink)]/68 hover:bg-[var(--soc-surface-cool)] hover:text-[var(--soc-ink)]"
+                    }`
+                  }
+                >
+                  {Icon ? (
+                    <Icon size={16} />
+                  ) : null}
+                  {item.name}
+                </NavLink>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            {user ? (
+              <>
+                {isAdmin ? (
+                  <Badge
+                    tone="accent"
+                    className="hidden md:inline-flex"
+                  >
+                    <Shield size={14} />
+                    Admin
+                  </Badge>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className={buttonStyles({
+                    variant: "secondary",
+                    size: "sm",
+                    className:
+                      "hidden md:inline-flex",
+                  })}
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className={buttonStyles({
+                    variant: "ghost",
+                    size: "sm",
+                    className:
+                      "hidden md:inline-flex",
+                  })}
+                >
+                  <LogIn size={16} />
+                  Login
+                </Link>
+
+                <Link
+                  to="/register"
+                  className={buttonStyles({
+                    size: "sm",
+                    className:
+                      "hidden md:inline-flex",
+                  })}
+                >
+                  <UserPlus size={16} />
+                  Register
+                </Link>
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={() =>
+                setMobileMenu(
+                  (current) => !current
+                )
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-[0.875rem] border border-[var(--soc-border-soft)] bg-white text-[var(--soc-ink)] shadow-[var(--soc-shadow-soft)] lg:hidden"
+            >
+              {mobileMenu ? (
+                <X size={18} />
+              ) : (
+                <Menu size={18} />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {mobileMenu ? (
+          <div className="mt-4 border-t border-[var(--soc-border-soft)] pt-4 lg:hidden">
+            <div className="flex flex-col gap-2">
               {navLinks.map((item) => {
                 const Icon = item.icon;
 
@@ -199,84 +224,69 @@ const Navbar = () => {
                   <NavLink
                     key={item.name}
                     to={item.path}
-                    onClick={() =>
-                      setMobileMenu(
-                        false
-                      )
-                    }
+                    onClick={closeMobileMenu}
                     className={({
                       isActive,
                     }) =>
-                      `flex items-center gap-3 rounded-2xl px-4 py-3 transition-all ${
+                      `${linkBaseStyles} ${
                         isActive
-                          ? "bg-cyan-500/10 text-cyan-300"
-                          : "text-slate-300 hover:bg-white/5"
+                          ? "bg-[var(--soc-surface-cool)] text-[var(--soc-ink)]"
+                          : "text-[var(--soc-ink)]/72 hover:bg-[var(--soc-surface-cool)] hover:text-[var(--soc-ink)]"
                       }`
                     }
                   >
-                    {Icon && <Icon size={20} />}
+                    {Icon ? (
+                      <Icon size={16} />
+                    ) : null}
                     {item.name}
                   </NavLink>
                 );
               })}
 
-              {user ? (
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="mt-4 flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-slate-200"
-                >
-                  <LogOut size={18} />
-                  Logout
-                </button>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    onClick={() =>
-                      setMobileMenu(
-                        false
-                      )
-                    }
-                    className="mt-4 flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-4 py-3 text-slate-300"
+              <div className="mt-2 flex flex-col gap-2 border-t border-[var(--soc-border-soft)] pt-4">
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className={buttonStyles({
+                      variant: "secondary",
+                      block: true,
+                    })}
                   >
-                    <LogIn size={18} />
-                    Login
-                  </Link>
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={closeMobileMenu}
+                      className={buttonStyles({
+                        variant: "ghost",
+                        block: true,
+                      })}
+                    >
+                      <LogIn size={16} />
+                      Login
+                    </Link>
 
-                  <Link
-                    to="/register"
-                    onClick={() =>
-                      setMobileMenu(
-                        false
-                      )
-                    }
-                    className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-4 py-3 font-bold text-white"
-                  >
-                    <UserPlus size={18} />
-                    Register
-                  </Link>
-                </>
-              )}
-
-              {location.pathname !==
-                "/projects" && (
-                <Link
-                  to="/projects"
-                  onClick={() =>
-                    setMobileMenu(
-                      false
-                    )
-                  }
-                  className="rounded-2xl bg-white/5 px-4 py-3 text-center text-sm text-slate-300"
-                >
-                  See showcase projects
-                </Link>
-              )}
+                    <Link
+                      to="/register"
+                      onClick={closeMobileMenu}
+                      className={buttonStyles({
+                        block: true,
+                      })}
+                    >
+                      <UserPlus size={16} />
+                      Register
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        ) : null}
+      </div>
     </header>
   );
 };

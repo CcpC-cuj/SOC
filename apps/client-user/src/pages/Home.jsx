@@ -5,13 +5,15 @@ import StatsSection from "../components/home/StatsSection";
 import TimelineSection from "../components/home/TimelineSection";
 
 const Home = () => (
-  <>
-    <Hero />
-    <About />
-    <StatsSection />
-    <TimelineSection />
-    <CTASection />
-  </>
+  <div className="relative overflow-hidden">
+    <div className="relative z-10">
+      <Hero />
+      <About />
+      <StatsSection />
+      <TimelineSection />
+      <CTASection />
+    </div>
+  </div>
 );
 
 export default Home;

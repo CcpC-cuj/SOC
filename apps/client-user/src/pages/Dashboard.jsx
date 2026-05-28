@@ -1,53 +1,95 @@
 import {
   useEffect,
+  useEffectEvent,
   useState,
 } from "react";
 import {
-  CheckCircle2,
+  ArrowRight,
+  BellRing,
+  BriefcaseBusiness,
   ClipboardList,
   Clock3,
   FolderKanban,
+  MailCheck,
   Sparkles,
+  UserRoundSearch,
+  Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import API from "../services/api";
+import Badge from "../components/ui/Badge";
+import { buttonStyles } from "../components/ui/buttonStyles";
+import { Card } from "../components/ui/Card";
+import EmptyState from "../components/ui/EmptyState";
+import { InlineMessage } from "../components/ui/Field";
+import {
+  MetricStrip,
+  PageHeader,
+  PageShell,
+} from "../components/ui/PageChrome";
 import {
   registrationStatusLabels,
 } from "../constants/registration";
 import {
+  normalizeTaskStatus,
+  submissionStatusLabels,
+  taskStatusLabels,
+} from "../constants/workflow";
+import { getApiErrorMessage } from "../services/apiError";
+import API from "../services/api";
+import {
   resendVerificationEmail,
 } from "../services/authService";
 
-const statusCopy = {
-  pending_review:
-    "Your profile is in the review queue. The team will match you to a project after reading your preferences and strengths.",
-  shortlisted:
-    "You are shortlisted. Keep an eye on your dashboard while the organizing team finalizes assignments.",
-  waitlisted:
-    "You are currently waitlisted. This usually happens when squads are being balanced or capacities are full.",
-  assigned:
-    "You have been assigned. Open your workspace and start building with your team.",
-  rejected:
-    "Your current registration is not moving forward right now. Reach out to the organizers if you want feedback.",
+const statusToneMap = {
+  pending_review: "warning",
+  shortlisted: "info",
+  waitlisted: "accent",
+  assigned: "success",
+  rejected: "danger",
 };
 
-const statusTheme = {
-  pending_review:
-    "bg-yellow-500/10 text-yellow-200 ring-yellow-300/20",
-  shortlisted:
-    "bg-cyan-500/10 text-cyan-100 ring-cyan-300/20",
-  waitlisted:
-    "bg-orange-500/10 text-orange-100 ring-orange-300/20",
-  assigned:
-    "bg-emerald-500/10 text-emerald-100 ring-emerald-300/20",
-  rejected:
-    "bg-rose-500/10 text-rose-100 ring-rose-300/20",
+const noticeToneClassMap = {
+  info:
+    "border-sky-300/18 bg-sky-400/10",
+  success:
+    "border-emerald-300/18 bg-emerald-400/10",
+  warning:
+    "border-amber-300/18 bg-amber-400/10",
+  danger:
+    "border-rose-300/18 bg-rose-400/10",
+};
+
+const formatDate = (
+  value,
+  {
+    withTime = false,
+  } = {}
+) => {
+  if (!value) {
+    return "Not available";
+  }
+
+  return new Date(value).toLocaleString(
+    "en-IN",
+    withTime
+      ? {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }
+      : {
+          dateStyle: "medium",
+        }
+  );
 };
 
 const Dashboard = () => {
   const [dashboard, setDashboard] =
     useState(null);
+  const [loading, setLoading] =
+    useState(true);
+  const [error, setError] =
+    useState("");
   const [emailMessage, setEmailMessage] =
     useState("");
   const [emailPreview, setEmailPreview] =
@@ -55,21 +97,40 @@ const Dashboard = () => {
   const [resendingEmail, setResendingEmail] =
     useState(false);
 
-  useEffect(() => {
-    async function fetchDashboard() {
-      try {
-        const response =
-          await API.get("/dashboard");
-        setDashboard(response.data);
-      } catch (error) {
-        console.error(
-          error.response?.data ||
-            error.message
-        );
-      }
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response =
+        await API.get("/dashboard");
+      setDashboard(response.data);
+    } catch (fetchError) {
+      setError(
+        getApiErrorMessage(
+          fetchError,
+          "Unable to load your dashboard right now."
+        )
+      );
+      setDashboard(null);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetchDashboard();
+  const loadDashboardOnMount =
+    useEffectEvent(() => {
+      fetchDashboardData();
+    });
+
+  useEffect(() => {
+    const timer =
+      window.setTimeout(() => {
+        loadDashboardOnMount();
+      }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, []);
 
   const handleResendVerification =
@@ -90,9 +151,9 @@ const Dashboard = () => {
         setEmailPreview(
           response.preview || null
         );
-      } catch (error) {
+      } catch (sendError) {
         setEmailMessage(
-          error.response?.data
+          sendError.response?.data
             ?.message ||
             "Unable to resend verification right now."
         );
@@ -101,10 +162,62 @@ const Dashboard = () => {
       }
     };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <PageShell>
+          <Card
+            strong
+            className="soc-skeleton h-56"
+          />
+          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <Card className="soc-skeleton h-80" />
+            <Card className="soc-skeleton h-80" />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="soc-skeleton h-72" />
+            <Card className="soc-skeleton h-72" />
+          </div>
+        </PageShell>
+      </div>
+    );
+  }
+
+  if (error && !dashboard) {
+    return (
+      <div className="min-h-screen">
+        <PageShell className="max-w-3xl">
+          <InlineMessage tone="error">
+            {error}
+          </InlineMessage>
+          <EmptyState
+            title="Dashboard unavailable"
+            description="We could not load your current registration and assignment data."
+            action={{
+              label: "Try again",
+              onClick:
+                fetchDashboardData,
+            }}
+          />
+        </PageShell>
+      </div>
+    );
+  }
+
   if (!dashboard) {
     return (
-      <div className="min-h-screen bg-[#050816] p-10 text-white">
-        Loading dashboard...
+      <div className="min-h-screen">
+        <PageShell className="max-w-3xl">
+          <EmptyState
+            title="No dashboard data yet"
+            description="Your account is active, but we could not find a dashboard snapshot right now."
+            action={{
+              label: "Reload",
+              onClick:
+                fetchDashboardData,
+            }}
+          />
+        </PageShell>
       </div>
     );
   }
@@ -113,325 +226,749 @@ const Dashboard = () => {
     dashboard.user
       .registrationStatus ||
     "pending_review";
+  const currentAssignment =
+    dashboard.currentAssignment;
+  const openTasks =
+    dashboard.tasks.filter((task) =>
+      normalizeTaskStatus(
+        task.status
+      ) !== "approved"
+    );
+  const taskFocusList =
+    openTasks.slice(0, 4);
+  const notices =
+    dashboard.notices || [];
+  const timeline =
+    dashboard.timeline || [];
+  const nextAction =
+    dashboard.nextAction || {};
+  const currentProjectPath =
+    currentAssignment?.project?._id
+      ? `/workspace/${currentAssignment.project._id}`
+      : "/projects";
+
+  const summaryItems = [
+    {
+      label:
+        "Registration state",
+      value:
+        registrationStatusLabels[
+          registrationStatus
+        ],
+      detail:
+        nextAction.eyebrow ||
+        "Current workflow stage",
+      icon: UserRoundSearch,
+    },
+    {
+      label: "Current project",
+      value:
+        currentAssignment?.project
+          ?.title ||
+        "Awaiting assignment",
+      detail:
+        currentAssignment?.team
+          ?.name
+          ? `Team ${currentAssignment.team.name}`
+          : "No team assigned yet",
+      icon: FolderKanban,
+    },
+    {
+      label: "Open tasks",
+      value: String(
+        openTasks.length
+      ),
+      detail:
+        openTasks.length > 0
+          ? `${dashboard.analytics.inProgressTasks} in progress`
+          : "No active tasks yet",
+      icon: ClipboardList,
+    },
+    {
+      label: "Important notices",
+      value: String(
+        notices.length
+      ),
+      detail:
+        notices.length > 0
+          ? "Needs your attention"
+          : "All clear right now",
+      icon: BellRing,
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#050816] px-4 py-10 text-white sm:px-6 lg:px-10">
-      <div className="mb-10">
-        <p className="text-sm uppercase tracking-[0.24em] text-cyan-300">
-          Participant Dashboard
-        </p>
-        <h1 className="mt-3 text-5xl font-black">
-          Welcome back,
-          {" "}
-          <span className="bg-gradient-to-r from-cyan-400 to-fuchsia-500 bg-clip-text text-transparent">
-            {dashboard.user.name}
-          </span>
-        </h1>
-        <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-400">
-          Track your registration progress, review your assignment status, and step into your workspace when your team is ready.
-        </p>
-      </div>
-
-      {!dashboard.user.emailVerified && (
-        <div className="mb-8 rounded-[2rem] border border-amber-300/20 bg-amber-500/10 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.22em] text-amber-100/80">
-                Email verification
-              </p>
-              <h2 className="mt-2 text-2xl font-black text-amber-50">
-                Verify your email to stay updated
-              </h2>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-amber-100/90">
-                Your account works, but verifying your email helps organizers send assignment and recovery updates reliably.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={
-                handleResendVerification
+    <div className="min-h-screen">
+      <PageShell>
+        <PageHeader
+          badge="Participant workspace"
+          title={`${dashboard.user.name}, your next move is clear.`}
+          description="See your registration stage, assignment, and active work from one clear home base."
+          meta={
+            <Badge
+              tone={
+                statusToneMap[
+                  registrationStatus
+                ] || "default"
               }
-              disabled={resendingEmail}
-              className="rounded-2xl border border-amber-200/20 bg-amber-200/10 px-5 py-3 text-sm font-semibold text-amber-50 transition hover:border-amber-100/40 disabled:cursor-not-allowed disabled:opacity-70"
+              className="px-4 py-2 text-sm"
             >
-              {resendingEmail
-                ? "Sending..."
-                : "Resend verification email"}
-            </button>
-          </div>
-
-          {emailMessage && (
-            <p className="mt-4 text-sm text-amber-50">
-              {emailMessage}
-            </p>
-          )}
-
-          {emailPreview?.url && (
-            <a
-              href={emailPreview.url}
-              className="mt-3 inline-flex text-sm text-cyan-200 underline"
-            >
-              Open preview verification link
-            </a>
-          )}
-        </div>
-      )}
-
-      <div className="mb-12 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm uppercase tracking-[0.22em] text-slate-400">
-              Registration status
-            </p>
-            <h2 className="mt-3 text-3xl font-black">
               {
                 registrationStatusLabels[
                   registrationStatus
                 ]
               }
-            </h2>
-            <p className="mt-4 max-w-3xl text-slate-300">
-              {statusCopy[registrationStatus]}
-            </p>
-          </div>
-
-          <span
-            className={`rounded-full px-4 py-2 text-sm font-semibold ring-1 ${
-              statusTheme[
-                registrationStatus
-              ]
-            }`}
-          >
-            {
-              registrationStatusLabels[
-                registrationStatus
-              ]
-            }
-          </span>
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {[
-            {
-              icon: Sparkles,
-              label: "Preferred domains",
-              value:
-                dashboard.user
-                  .preferredDomains
-                  ?.join(", ") ||
-                "Not set yet",
-            },
-            {
-              icon: FolderKanban,
-              label: "Assigned projects",
-              value:
-                String(
-                  dashboard.analytics
-                    .totalProjects
-                ),
-            },
-            {
-              icon: Clock3,
-              label:
-                "Pending tasks",
-              value:
-                String(
-                  dashboard.analytics
-                    .pendingTasks
-                ),
-            },
-          ].map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <div
-                key={item.label}
-                className="rounded-3xl border border-white/10 bg-[#07101c] p-5"
-              >
-                <Icon
-                  className="mb-4 text-cyan-300"
-                  size={22}
-                />
-                <p className="text-sm text-slate-400">
-                  {item.label}
-                </p>
-                <h3 className="mt-2 text-xl font-bold text-slate-100">
-                  {item.value}
-                </h3>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mb-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {[
-          {
-            icon: FolderKanban,
-            label:
-              "Joined Projects",
-            value:
-              dashboard.analytics
-                .totalProjects,
-            color: "text-cyan-300",
-          },
-          {
-            icon: ClipboardList,
-            label: "Total Tasks",
-            value:
-              dashboard.analytics
-                .totalTasks,
-            color:
-              "text-fuchsia-300",
-          },
-          {
-            icon: Clock3,
-            label:
-              "Pending Tasks",
-            value:
-              dashboard.analytics
-                .pendingTasks,
-            color:
-              "text-yellow-300",
-          },
-          {
-            icon: CheckCircle2,
-            label:
-              "Approved Tasks",
-            value:
-              dashboard.analytics
-                .approvedTasks,
-            color:
-              "text-emerald-300",
-          },
-        ].map((card) => {
-          const Icon = card.icon;
-
-          return (
-            <div
-              key={card.label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
-            >
-              <Icon
-                className={`mb-4 ${card.color}`}
-                size={28}
-              />
-              <h2 className="text-4xl font-black">
-                {card.value}
-              </h2>
-              <p className="mt-2 text-slate-400">
-                {card.label}
+            </Badge>
+          }
+          aside={
+            <Card className="p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--soc-text-muted)]">
+                Focus right now
               </p>
-            </div>
-          );
-        })}
-      </div>
+              <p className="mt-3 text-lg font-semibold text-[var(--soc-ink)]">
+                {nextAction.eyebrow ||
+                  "Current next step"}
+              </p>
+              <p className="mt-3 text-sm leading-7 text-[var(--soc-text-muted)]">
+                {nextAction.description}
+              </p>
+            </Card>
+          }
+        />
 
-      <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-3xl font-black">
-              My Assignment
-            </h2>
-            <p className="mt-2 text-slate-400">
-              When the organizers place you into a project, it will appear here.
-            </p>
-          </div>
-          <Link
-            to="/projects"
-            className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:border-cyan-400/30 hover:text-cyan-200"
+        <MetricStrip items={summaryItems} />
+
+        <div className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr]">
+          <Card
+            strong
+            className="overflow-hidden p-7 sm:p-8"
           >
-            Browse showcase projects
-          </Link>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--soc-teal)]">
+                  {nextAction.eyebrow ||
+                    "Current next step"}
+                </p>
+                <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-[-0.03em] text-[var(--soc-ink)] sm:text-4xl">
+                  {nextAction.title}
+                </h2>
+                <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--soc-ink)] sm:text-base">
+                  {
+                    nextAction.description
+                  }
+                </p>
+              </div>
+
+              <Sparkles
+                size={30}
+                className="text-[var(--soc-teal)]"
+              />
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              <Badge
+                tone={
+                  statusToneMap[
+                    registrationStatus
+                  ] || "default"
+                }
+              >
+                {
+                  registrationStatusLabels[
+                    registrationStatus
+                  ]
+                }
+              </Badge>
+              {currentAssignment?.project
+                ?.title && (
+                <Badge tone="info">
+                  {
+                    currentAssignment.project
+                      .title
+                  }
+                </Badge>
+              )}
+              {currentAssignment?.team
+                ?.name && (
+                <Badge tone="accent">
+                  Team{" "}
+                  {
+                    currentAssignment.team
+                      .name
+                  }
+                </Badge>
+              )}
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              {nextAction.actionType ===
+              "resend_verification" ? (
+                <button
+                  type="button"
+                  onClick={
+                    handleResendVerification
+                  }
+                  disabled={resendingEmail}
+                  className={buttonStyles({
+                    className:
+                      "disabled:opacity-70",
+                  })}
+                >
+                  <MailCheck size={16} />
+                  {resendingEmail
+                    ? "Sending..."
+                    : nextAction.actionLabel}
+                </button>
+              ) : nextAction.actionPath ? (
+                <Link
+                  to={
+                    nextAction.actionPath
+                  }
+                  className={buttonStyles()}
+                >
+                  {
+                    nextAction.actionLabel
+                  }
+                  <ArrowRight
+                    size={16}
+                  />
+                </Link>
+              ) : null}
+
+              {nextAction.secondaryPath && (
+                <Link
+                  to={
+                    nextAction.secondaryPath
+                  }
+                  className={buttonStyles({
+                    variant: "secondary",
+                  })}
+                >
+                  {
+                    nextAction.secondaryLabel
+                  }
+                </Link>
+              )}
+            </div>
+
+            {emailMessage && (
+              <InlineMessage
+                tone="info"
+                className="mt-5"
+              >
+                {emailMessage}
+              </InlineMessage>
+            )}
+
+            {emailPreview?.url && (
+              <a
+                href={emailPreview.url}
+                className="mt-4 inline-flex text-sm text-[var(--soc-teal)] underline"
+              >
+                Open preview verification link
+              </a>
+            )}
+          </Card>
+
+          <Card className="p-7">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--soc-text-muted)]">
+                  Timeline
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-[var(--soc-ink)]">
+                  Your current journey
+                </h2>
+              </div>
+              <Clock3
+                size={22}
+                className="text-[var(--soc-teal)]"
+              />
+            </div>
+
+            <div className="mt-6 space-y-4">
+              {timeline.map(
+                (entry, index) => (
+                  <div
+                    key={`${entry.label}-${index}`}
+                    className="relative rounded-[1.4rem] border border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-4"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--soc-text-muted)]">
+                      {entry.label}
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[var(--soc-ink)]">
+                      {entry.type === "date"
+                        ? formatDate(
+                            entry.value,
+                            {
+                              withTime: true,
+                            }
+                          )
+                        : entry.value}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[var(--soc-text-muted)]">
+                      {entry.detail}
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
+          </Card>
         </div>
 
-        {dashboard.memberships.length > 0 ? (
-          <div className="grid gap-6 lg:grid-cols-2">
-            {dashboard.memberships.map(
-              (member) => (
-                <Link
-                  to={`/workspace/${member.project?._id}`}
-                  key={member._id}
-                  className="rounded-3xl border border-white/10 bg-[#07101c] p-6 transition hover:border-cyan-400/30"
-                >
-                  <div className="flex items-start justify-between gap-4">
+        <div className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
+          <Card className="p-7">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--soc-text-muted)]">
+                  Assignment status
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-[var(--soc-ink)]">
+                  Current team and project
+                </h2>
+              </div>
+              <BriefcaseBusiness
+                size={22}
+                className="text-[var(--soc-teal)]"
+              />
+            </div>
+
+            {currentAssignment ? (
+              <div className="mt-6 space-y-5">
+                <div className="rounded-[1.6rem] border border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <h3 className="text-3xl font-black">
+                      <h3 className="text-2xl font-semibold text-[var(--soc-ink)]">
                         {
-                          member.project
+                          currentAssignment.project
                             ?.title
                         }
                       </h3>
-                      <p className="mt-3 text-slate-400">
+                      <p className="mt-3 text-sm leading-7 text-[var(--soc-text-muted)]">
                         {
-                          member.project
+                          currentAssignment.project
                             ?.description
                         }
                       </p>
                     </div>
-                    {member.isLeader && (
-                      <span className="rounded-full bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200">
-                        Leader
-                      </span>
+
+                    {currentAssignment.isLeader && (
+                      <Badge tone="success">
+                        You are a team lead
+                      </Badge>
                     )}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-[1.4rem] border border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-4">
+                    <p className="text-sm text-[var(--soc-text-muted)]">
+                      Team
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-[var(--soc-ink)]">
+                      {currentAssignment.team
+                        ?.name ||
+                        "Not assigned yet"}
+                    </h3>
+                    <p className="mt-2 text-sm text-[var(--soc-text-muted)]">
+                      {currentAssignment.team
+                        ?.focus ||
+                        "Team focus note is not available yet."}
+                    </p>
                   </div>
 
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    {member.roles?.map(
-                      (role) => (
-                        <span
-                          key={role}
-                          className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-100"
-                        >
-                          {role.replaceAll(
-                            "-",
-                            " "
-                          )}
-                        </span>
-                      )
-                    )}
+                  <div className="rounded-[1.4rem] border border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-4">
+                    <p className="text-sm text-[var(--soc-text-muted)]">
+                      Team lead
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-[var(--soc-ink)]">
+                      {currentAssignment.team
+                        ?.leader?.name ||
+                        (currentAssignment.isLeader
+                          ? "You"
+                          : "Not assigned yet")}
+                    </h3>
+                    <p className="mt-2 text-sm text-[var(--soc-text-muted)]">
+                      Assigned on{" "}
+                      {formatDate(
+                        currentAssignment.assignedAt
+                      )}
+                    </p>
                   </div>
+                </div>
 
-                  <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-400">
-                    {member.team?.name && (
-                      <span>
-                        Team:
-                        {" "}
-                        <span className="text-slate-200">
-                          {
-                            member.team
-                              .name
-                          }
-                        </span>
-                      </span>
-                    )}
-                    <span>
-                      Status:
-                      {" "}
-                      <span className="text-slate-200">
-                        {
-                          member.project
-                            ?.status
-                        }
-                      </span>
-                    </span>
-                  </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {currentAssignment.roles?.map(
+                    (role) => (
+                      <Badge
+                        key={role}
+                        tone="default"
+                      >
+                        {role.replaceAll(
+                          "-",
+                          " "
+                        )}
+                      </Badge>
+                    )
+                  )}
+                </div>
+
+                <Link
+                  to={currentProjectPath}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--soc-teal)]"
+                >
+                  Open workspace
+                  <ArrowRight
+                    size={16}
+                  />
                 </Link>
-              )
+              </div>
+            ) : (
+              <div className="mt-6 rounded-[1.6rem] border border-dashed border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-6">
+                <h3 className="text-xl font-semibold text-[var(--soc-ink)]">
+                  No live assignment yet
+                </h3>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--soc-text-muted)]">
+                  That is normal while the organizers balance squads, review profiles, and confirm team structure. Your assignment will appear here the moment it is ready.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link
+                    to="/profile"
+                    className={buttonStyles()}
+                  >
+                    Review profile
+                  </Link>
+                  <Link
+                    to="/projects"
+                    className={buttonStyles({
+                      variant: "secondary",
+                    })}
+                  >
+                    Browse showcase
+                  </Link>
+                </div>
+              </div>
             )}
-          </div>
-        ) : (
-          <div className="rounded-3xl border border-dashed border-white/10 bg-[#07101c] p-10 text-center">
-            <h3 className="text-2xl font-bold">
-              No project assignment yet
-            </h3>
-            <p className="mx-auto mt-3 max-w-2xl text-slate-400">
-              That is normal at this stage. Your registration stays active while the organizing team studies strengths, preferences, and team balance.
-            </p>
-          </div>
-        )}
-      </div>
+          </Card>
+
+          <Card className="p-7">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--soc-text-muted)]">
+                  Notices
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-[var(--soc-ink)]">
+                  Important updates
+                </h2>
+              </div>
+              <BellRing
+                size={22}
+                className="text-[var(--soc-teal)]"
+              />
+            </div>
+
+            {notices.length > 0 ? (
+              <div className="mt-6 space-y-4">
+                {notices.map(
+                  (notice, index) => (
+                    <div
+                      key={`${notice.title}-${index}`}
+                      className={`rounded-[1.5rem] border p-4 ${
+                        noticeToneClassMap[
+                          notice.tone
+                        ] ||
+                        noticeToneClassMap.info
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-[var(--soc-ink)]">
+                        {notice.title}
+                      </p>
+                      <p className="mt-2 text-sm leading-7 text-[var(--soc-ink)]">
+                        {
+                          notice.description
+                        }
+                      </p>
+                      {notice.actionPath && (
+                        <Link
+                          to={
+                            notice.actionPath
+                          }
+                          className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[var(--soc-teal)]"
+                        >
+                          {
+                            notice.actionLabel
+                          }
+                          <ArrowRight
+                            size={15}
+                          />
+                        </Link>
+                      )}
+                    </div>
+                  )
+                )}
+              </div>
+            ) : (
+              <div className="mt-6 rounded-[1.5rem] border border-emerald-300/14 bg-emerald-400/8 p-5">
+                <p className="text-sm font-semibold text-emerald-100">
+                  No active notices right now.
+                </p>
+                <p className="mt-2 text-sm leading-7 text-emerald-50/80">
+                  Your registration, assignment, and current work do not have anything urgent attached at the moment.
+                </p>
+              </div>
+            )}
+          </Card>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
+          <Card className="p-7">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--soc-text-muted)]">
+                  Active work
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-[var(--soc-ink)]">
+                  Tasks that need attention
+                </h2>
+              </div>
+              <ClipboardList
+                size={22}
+                className="text-[var(--soc-teal)]"
+              />
+            </div>
+
+            {taskFocusList.length > 0 ? (
+              <div className="mt-6 space-y-4">
+                {taskFocusList.map((task) => {
+                  const status =
+                    normalizeTaskStatus(
+                      task.status
+                    );
+
+                  return (
+                    <div
+                      key={task._id}
+                      className="rounded-[1.5rem] border border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-5"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm text-[var(--soc-text-muted)]">
+                            {
+                              task.project
+                                ?.title
+                            }
+                          </p>
+                          <h3 className="mt-2 text-lg font-semibold text-[var(--soc-ink)]">
+                            {task.title}
+                          </h3>
+                        </div>
+                        <Badge
+                          tone={
+                            status ===
+                            "approved"
+                              ? "success"
+                              : status ===
+                                  "submitted"
+                                ? "info"
+                                : status ===
+                                    "blocked"
+                                  ? "warning"
+                                  : status ===
+                                      "rejected"
+                                    ? "danger"
+                                    : "default"
+                          }
+                        >
+                          {
+                            taskStatusLabels[
+                              status
+                            ]
+                          }
+                        </Badge>
+                      </div>
+
+                      <p className="mt-3 text-sm leading-7 text-[var(--soc-text-muted)]">
+                        {task.description}
+                      </p>
+
+                      <div className="mt-4 flex flex-wrap gap-4 text-sm text-[var(--soc-text-muted)]">
+                        <span>
+                          Deadline:{" "}
+                          <span className="text-[var(--soc-ink)]">
+                            {task.deadline
+                              ? formatDate(
+                                  task.deadline
+                                )
+                              : "No deadline"}
+                          </span>
+                        </span>
+                        <span>
+                          Last updated:{" "}
+                          <span className="text-[var(--soc-ink)]">
+                            {formatDate(
+                              task.updatedAt
+                            )}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {currentAssignment && (
+                  <Link
+                    to={currentProjectPath}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--soc-teal)]"
+                  >
+                    Open full task board
+                    <ArrowRight
+                      size={16}
+                    />
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="mt-6 rounded-[1.5rem] border border-dashed border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-6">
+                <p className="text-lg font-semibold text-[var(--soc-ink)]">
+                  No active tasks are waiting on you right now.
+                </p>
+                <p className="mt-3 text-sm leading-7 text-[var(--soc-text-muted)]">
+                  Once work is assigned, it will appear here with status, deadline, and direct links back to the workspace.
+                </p>
+              </div>
+            )}
+          </Card>
+
+          <Card className="p-7">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--soc-text-muted)]">
+                  Submission state
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-[var(--soc-ink)]">
+                  Milestone progress
+                </h2>
+              </div>
+              <Users
+                size={22}
+                className="text-[var(--soc-teal)]"
+              />
+            </div>
+
+            {currentAssignment ? (
+              dashboard.submission ? (
+                <div className="mt-6 space-y-5">
+                  <div className="flex flex-wrap gap-2.5">
+                    <Badge
+                      tone={
+                        dashboard.submission
+                          .status ===
+                        "approved"
+                          ? "success"
+                          : dashboard.submission
+                              .status ===
+                              "rejected"
+                            ? "danger"
+                            : dashboard.submission
+                                .status ===
+                                "submitted"
+                              ? "info"
+                              : "default"
+                      }
+                    >
+                      {
+                        submissionStatusLabels[
+                          dashboard
+                            .submission
+                            .status
+                        ]
+                      }
+                    </Badge>
+                    <Badge tone="default">
+                      {dashboard.submission
+                        .milestoneLabel ||
+                        "Current milestone"}
+                    </Badge>
+                  </div>
+
+                  <div className="rounded-[1.5rem] border border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-5">
+                    <p className="text-sm text-[var(--soc-text-muted)]">
+                      Last updated
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-[var(--soc-ink)]">
+                      {formatDate(
+                        dashboard.submission
+                          .updatedAt,
+                        {
+                          withTime: true,
+                        }
+                      )}
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-[var(--soc-text-muted)]">
+                      {dashboard.submission
+                        .remarks ||
+                        "No review remark is attached to the current milestone yet."}
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="rounded-[1.4rem] border border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-4">
+                      <p className="text-sm text-[var(--soc-text-muted)]">
+                        Submitted tasks
+                      </p>
+                      <h3 className="mt-2 text-xl font-semibold text-[var(--soc-ink)]">
+                        {
+                          dashboard.analytics
+                            .submittedTasks
+                        }
+                      </h3>
+                    </div>
+                    <div className="rounded-[1.4rem] border border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-4">
+                      <p className="text-sm text-[var(--soc-text-muted)]">
+                        Approved tasks
+                      </p>
+                      <h3 className="mt-2 text-xl font-semibold text-[var(--soc-ink)]">
+                        {
+                          dashboard.analytics
+                            .approvedTasks
+                        }
+                      </h3>
+                    </div>
+                  </div>
+
+                  <Link
+                    to={currentProjectPath}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--soc-teal)]"
+                  >
+                    Open workspace for full submission details
+                    <ArrowRight
+                      size={16}
+                    />
+                  </Link>
+                </div>
+              ) : (
+                <div className="mt-6 rounded-[1.5rem] border border-dashed border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-6">
+                  <p className="text-lg font-semibold text-[var(--soc-ink)]">
+                    No milestone has been saved for this project yet.
+                  </p>
+                  <p className="mt-3 text-sm leading-7 text-[var(--soc-text-muted)]">
+                    Drafts and submitted milestones will show up here once your team starts delivery work.
+                  </p>
+                </div>
+              )
+            ) : (
+              <div className="mt-6 rounded-[1.5rem] border border-dashed border-[var(--soc-border-soft)] bg-[var(--soc-surface-cool)] p-6">
+                <p className="text-lg font-semibold text-[var(--soc-ink)]">
+                  Submission tracking appears after assignment.
+                </p>
+                <p className="mt-3 text-sm leading-7 text-[var(--soc-text-muted)]">
+                  Once you are placed into a project, this section will show milestone status, review feedback, and delivery readiness.
+                </p>
+              </div>
+            )}
+          </Card>
+        </div>
+      </PageShell>
     </div>
   );
 };

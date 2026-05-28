@@ -13,6 +13,8 @@ const assignmentHistorySchema = new mongoose.Schema(
       type: String,
       enum: [
         "registered",
+        "profile-updated",
+        "change-requested",
         "status-updated",
         "assigned",
         "reassigned",
@@ -60,6 +62,34 @@ const assignmentHistorySchema = new mongoose.Schema(
     _id: false,
   }
 );
+
+const profileChangeRequestSchema =
+  new mongoose.Schema(
+    {
+      note: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      requestedFields: {
+        type: [String],
+        default: [],
+      },
+
+      requestedValues: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
+      },
+
+      requestedAt: {
+        type: Date,
+      },
+    },
+    {
+      _id: false,
+    }
+  );
 
 const userSchema = new mongoose.Schema(
   {
@@ -213,6 +243,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: "",
+    },
+
+    pendingProfileChangeRequest: {
+      type: profileChangeRequestSchema,
+      default: null,
     },
 
     assignmentHistory: {

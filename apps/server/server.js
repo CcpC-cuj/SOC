@@ -143,6 +143,104 @@ connectDB();
 
 const app = express();
 
+const configuredOrigins = [
+  process.env.USER_CLIENT_URL,
+  process.env.PUBLIC_CLIENT_URL,
+].filter(Boolean);
+
+const localDevOriginPattern =
+  /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+const localDevHostPattern =
+  /^(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+const localAddressPattern =
+  /(::1|127\.0\.0\.1)$/;
+
+const corsOptions = {
+  origin: function (
+    origin,
+    callback
+  ) {
+    if (!origin) {
+      return callback(
+        null,
+        true
+      );
+    }
+
+    if (
+      localDevOriginPattern.test(
+        origin
+      ) ||
+      configuredOrigins.includes(
+        origin
+      )
+    ) {
+      return callback(
+        null,
+        true
+      );
+    }
+
+    return callback(
+      new Error(
+        `Not allowed by CORS: ${origin}`
+      )
+    );
+  },
+
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+  ],
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+  ],
+
+  credentials: true,
+};
+
+const isLocalDevelopmentRequest =
+  (req) => {
+    if (
+      process.env.NODE_ENV ===
+      "production"
+    ) {
+      return false;
+    }
+
+    const origin =
+      req.get("origin") || "";
+    const host = req.get("host") || "";
+    const requestIp =
+      req.ip || "";
+    const remoteAddress =
+      req.socket?.remoteAddress ||
+      "";
+
+    return (
+      localDevOriginPattern.test(
+        origin
+      ) ||
+      localDevHostPattern.test(
+        host
+      ) ||
+      localAddressPattern.test(
+        requestIp
+      ) ||
+      localAddressPattern.test(
+        remoteAddress
+      )
+    );
+  };
+
 
 // SECURITY MIDDLEWARE
 app.use(helmet());
@@ -152,12 +250,30 @@ app.use(helmet());
 app.use(morgan("dev"));
 
 
+app.use(
+  cors(corsOptions)
+);
+
+app.options(
+  /.*/,
+  cors(corsOptions)
+);
+
+
 // RATE LIMITER
 const limiter = rateLimit({
   windowMs:
     15 * 60 * 1000,
 
   max: 100,
+
+  standardHeaders: true,
+
+  legacyHeaders: false,
+
+  skip: (req) =>
+    req.method === "OPTIONS" ||
+    isLocalDevelopmentRequest(req),
 
   message: {
     success: false,
@@ -167,86 +283,6 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-
-
-
-app.use(
-  cors({
-    origin: function (
-      origin,
-      callback
-    ) {
-
-      const allowedOrigins = [
-        "http://localhost:5173",
-        process.env.USER_CLIENT_URL,
-      ];
-
-      console.log(
-        "Request Origin:",
-        origin
-      );
-
-      console.log(
-        "Allowed Origins:",
-        allowedOrigins
-      );
-
-      // ALLOW POSTMAN / MOBILE / SERVER REQUESTS
-      if (!origin) {
-
-        return callback(
-          null,
-          true
-        );
-      }
-
-      // ALLOW FRONTEND
-      if (
-        allowedOrigins.includes(
-          origin
-        )
-      ) {
-
-        return callback(
-          null,
-          true
-        );
-      }
-
-      // BLOCK OTHERS
-      return callback(
-        new Error(
-          "Not allowed by CORS"
-        )
-      );
-    },
-
-    methods: [
-      "GET",
-      "POST",
-      "PUT",
-      "PATCH",
-      "DELETE",
-      "OPTIONS",
-    ],
-
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-    ],
-
-    credentials: true,
-  })
-);
-
-
-
-// app.options("*", cors());
-app.options(
-  /.*/,
-  cors()
-);
 
 
 // app.use(

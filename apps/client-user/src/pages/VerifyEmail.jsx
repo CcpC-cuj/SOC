@@ -11,6 +11,14 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import { buttonStyles } from "../components/ui/buttonStyles";
+import {
+  Card,
+  CardSection,
+} from "../components/ui/Card";
+import { InlineMessage } from "../components/ui/Field";
 import {
   resendVerificationEmail,
   verifyEmailToken,
@@ -132,12 +140,7 @@ const VerifyEmail = () => {
     status === "success";
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050816] px-4 py-20 text-white sm:px-6 lg:px-8">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute left-0 top-0 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-fuchsia-500/10 blur-3xl" />
-      </div>
-
+    <div className="min-h-screen py-10 sm:py-14">
       <motion.div
         initial={{
           opacity: 0,
@@ -150,103 +153,146 @@ const VerifyEmail = () => {
         transition={{
           duration: 0.5,
         }}
-        className="mx-auto max-w-3xl rounded-[2.5rem] border border-white/10 bg-white/[0.05] p-8 text-center backdrop-blur-xl sm:p-12"
+        className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8"
       >
-        <div
-          className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full ${
-            isSuccess
-              ? "bg-emerald-500/15"
-              : "bg-amber-500/15"
-          }`}
-        >
-          {isSuccess ? (
-            <CheckCircle2
-              size={34}
-              className="text-emerald-300"
-            />
-          ) : status ===
-            "loading" ? (
-            <RefreshCcw
-              size={34}
-              className="animate-spin text-cyan-300"
-            />
-          ) : (
-            <TriangleAlert
-              size={34}
-              className="text-amber-300"
-            />
-          )}
-        </div>
-
-        <h1 className="mt-8 text-4xl font-black sm:text-5xl">
-          {isSuccess
-            ? "Email verified"
-            : "Verification check"}
-        </h1>
-
-        <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-300">
-          {message}
-        </p>
-
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          <Link
-            to="/login"
-            className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-slate-100 transition hover:border-cyan-400/30 hover:text-cyan-200"
+        <Card strong className="p-8 text-center sm:p-10 lg:p-12">
+          <div
+            className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full border ${
+              isSuccess
+                ? "border-emerald-200 bg-emerald-50"
+                : status === "loading"
+                  ? "border-sky-200 bg-sky-50"
+                  : "border-amber-200 bg-amber-50"
+            }`}
           >
-            Go to login
-          </Link>
-          <Link
-            to="/dashboard"
-            className="rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-6 py-4 font-semibold text-white transition hover:scale-[1.01]"
-          >
-            Open dashboard
-          </Link>
-        </div>
-
-        {!isSuccess && (
-          <div className="mt-10 rounded-3xl border border-white/10 bg-[#081121] p-6 text-left">
-            <div className="flex items-start gap-3">
-              <MailCheck
-                size={20}
-                className="mt-1 text-cyan-300"
+            {isSuccess ? (
+              <CheckCircle2
+                size={34}
+                className="text-emerald-700"
               />
-              <div>
-                <h2 className="text-xl font-bold">
-                  Need a fresh verification link?
-                </h2>
-                <p className="mt-2 text-slate-400">
-                  If you are already signed in, we can resend it to your registered email.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleResend}
-              disabled={resending}
-              className="mt-6 rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-5 py-3 font-semibold text-cyan-100 transition hover:border-cyan-300/40 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {resending
-                ? "Sending..."
-                : "Resend verification email"}
-            </button>
-
-            {resendMessage && (
-              <p className="mt-4 text-sm text-slate-300">
-                {resendMessage}
-              </p>
-            )}
-
-            {preview?.url && (
-              <a
-                href={preview.url}
-                className="mt-3 inline-flex text-sm text-cyan-300 underline"
-              >
-                Open preview verification link
-              </a>
+            ) : status ===
+              "loading" ? (
+              <RefreshCcw
+                size={34}
+                className="animate-spin text-sky-700"
+              />
+            ) : (
+              <TriangleAlert
+                size={34}
+                className="text-amber-700"
+              />
             )}
           </div>
-        )}
+
+          <Badge
+            tone={
+              isSuccess
+                ? "success"
+                : status === "loading"
+                  ? "info"
+                  : "warning"
+            }
+            className="mt-6"
+          >
+            {isSuccess
+              ? "Email verified"
+              : status === "loading"
+                ? "Verification in progress"
+                : "Verification needs attention"}
+          </Badge>
+
+          <h1 className="mx-auto mt-6 max-w-2xl text-3xl font-semibold tracking-[-0.04em] text-[var(--soc-ink)] sm:text-5xl">
+            {isSuccess
+              ? "Your email has been verified."
+              : "We checked your verification link."}
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-[var(--soc-text-muted)] sm:text-lg">
+            {message}
+          </p>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            <Link
+              to="/login"
+              className={buttonStyles({
+                variant: "secondary",
+                block: true,
+                size: "lg",
+              })}
+            >
+              Go to login
+            </Link>
+            <Link
+              to="/dashboard"
+              className={buttonStyles({
+                block: true,
+                size: "lg",
+              })}
+            >
+              Open dashboard
+            </Link>
+          </div>
+
+          {!isSuccess ? (
+            <CardSection className="mt-10 p-6 text-left">
+              <div className="flex items-start gap-3">
+                <MailCheck
+                  size={18}
+                  className="mt-1 text-[var(--soc-teal)]"
+                />
+                <div>
+                  <h2 className="text-xl font-semibold tracking-[-0.03em] text-[var(--soc-ink)]">
+                    Need a fresh verification link?
+                  </h2>
+                  <p className="mt-2 text-sm leading-7 text-[var(--soc-text-muted)]">
+                    If you are already signed in, we can resend it to your
+                    registered email.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  loading={resending}
+                  loadingLabel="Sending link..."
+                  onClick={handleResend}
+                >
+                  Resend verification email
+                </Button>
+              </div>
+
+              {resendMessage ? (
+                <InlineMessage
+                  tone={
+                    resendMessage.includes(
+                      "Unable"
+                    ) ||
+                    resendMessage.includes(
+                      "Sign in first"
+                    )
+                      ? "warning"
+                      : "success"
+                  }
+                  className="mt-4"
+                >
+                  <div className="space-y-3">
+                    <p>{resendMessage}</p>
+                    {preview?.url ? (
+                      <a
+                        href={preview.url}
+                        className="inline-flex font-medium text-[var(--soc-teal)] underline decoration-[var(--soc-ink)]/20 underline-offset-4"
+                      >
+                        Open preview verification link
+                      </a>
+                    ) : null}
+                  </div>
+                </InlineMessage>
+              ) : null}
+            </CardSection>
+          ) : null}
+        </Card>
       </motion.div>
     </div>
   );

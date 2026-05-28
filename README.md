@@ -42,3 +42,7 @@ This project is a full-stack Seasons of Code portal with:
 - Direct self-join is disabled by design.
 - Showcase projects are public-facing and should not be used for assignment.
 - Assignment-ready projects should be created with `isShowcase = false`.
+
+## Release
+
+- Controlled rollout plan: [`RELEASE_RUNBOOK.md`](./RELEASE_RUNBOOK.md)

@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useEffectEvent,
   useState,
 } from "react";
 import {
@@ -7,97 +8,202 @@ import {
   CalendarDays,
   Layers3,
   Sparkles,
-  Users,
 } from "lucide-react";
-import {
-  Link,
-  useParams,
-} from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
+import Badge from "../components/ui/Badge";
+import { buttonStyles } from "../components/ui/buttonStyles";
+import {
+  Card,
+  CardSection,
+} from "../components/ui/Card";
+import EmptyState from "../components/ui/EmptyState";
+import { InlineMessage } from "../components/ui/Field";
+import {
+  PageHeader,
+  PageShell,
+  SectionHeader,
+} from "../components/ui/PageChrome";
+import { getApiErrorMessage } from "../services/apiError";
 import API from "../services/api";
 
 const ProjectDetails = () => {
   const { id } = useParams();
   const [project, setProject] =
     useState(null);
+  const [loading, setLoading] =
+    useState(true);
+  const [error, setError] =
+    useState("");
+
+  const fetchProjectData = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response =
+        await API.get(
+          `/projects/public/${id}`
+        );
+      setProject(response.data);
+    } catch (fetchError) {
+      setProject(null);
+      setError(
+        getApiErrorMessage(
+          fetchError,
+          "We could not load this showcase project."
+        )
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadProjectDetails =
+    useEffectEvent(() => {
+      fetchProjectData();
+    });
 
   useEffect(() => {
-    async function fetchProject() {
-      try {
-        const response =
-          await API.get(
-            `/projects/${id}`
-          );
-        setProject(response.data);
-      } catch (error) {
-        console.error(
-          error.response?.data ||
-            error.message
-        );
-      }
-    }
+    const timer =
+      window.setTimeout(() => {
+        loadProjectDetails();
+      }, 0);
 
-    fetchProject();
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [id]);
+
+  if (loading) {
+    return (
+      <PageShell>
+        <Card
+          strong
+          className="soc-skeleton h-72"
+        />
+        <div className="grid gap-6 md:grid-cols-3">
+          {Array.from({
+            length: 3,
+          }).map((_, index) => (
+            <Card
+              key={index}
+              className="soc-skeleton h-40"
+            />
+          ))}
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageShell className="max-w-3xl">
+        <InlineMessage tone="error">
+          {error}
+        </InlineMessage>
+        <EmptyState
+          title="Showcase project unavailable"
+          description="This public project may have been removed or is no longer visible."
+          action={{
+            label: "Try again",
+            onClick:
+              fetchProjectData,
+          }}
+        />
+      </PageShell>
+    );
+  }
 
   if (!project) {
     return (
-      <div className="p-10 text-white">
-        Loading project...
-      </div>
+      <PageShell className="max-w-3xl">
+        <EmptyState
+          title="Project not found"
+          description="There is no public showcase entry for this project right now."
+          action={{
+            label:
+              "Reload project",
+            onClick:
+              fetchProjectData,
+            variant:
+              "secondary",
+          }}
+        />
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050816] px-4 py-14 text-white sm:px-6 lg:px-10">
-      <div className="mb-10 rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl lg:p-10">
-        <div className="mb-5 flex flex-wrap gap-3">
-          <span className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-100">
-            {project.domain}
-          </span>
-          <span className="rounded-full bg-fuchsia-500/10 px-4 py-2 text-sm text-fuchsia-100">
-            {project.session}
-          </span>
-          <span
-            className={`rounded-full px-4 py-2 text-sm ${
-              project.isShowcase
-                ? "bg-yellow-500/10 text-yellow-100"
-                : "bg-emerald-500/10 text-emerald-100"
-            }`}
-          >
-            {project.isShowcase
-              ? "Showcase Project"
-              : "Assignment-ready Project"}
-          </span>
-        </div>
+    <PageShell className="space-y-10">
+      <PageHeader
+        badge="Showcase track"
+        badgeTone="warning"
+        title={project.title}
+        description={project.description}
+        meta={[
+          project.domain ? (
+            <Badge
+              key="domain"
+              tone="info"
+            >
+              {project.domain}
+            </Badge>
+          ) : null,
+          project.session ? (
+            <Badge
+              key="session"
+              tone="accent"
+            >
+              {project.session}
+            </Badge>
+          ) : null,
+        ].filter(Boolean)}
+        aside={
+          <Card className="p-6 sm:p-7">
+            <div className="flex items-center gap-3">
+              <Sparkles
+                className="text-[var(--soc-teal)]"
+                size={18}
+              />
+              <h2 className="text-xl font-semibold tracking-[-0.03em] text-[var(--soc-ink)]">
+                Selection flow
+              </h2>
+            </div>
+            <div className="mt-5 space-y-3 text-sm leading-7 text-[var(--soc-text-muted)]">
+              <p>
+                Participants do not self-join into showcase tracks directly.
+              </p>
+              <p>
+                Organizers review profiles, balance teams, and make the final
+                assignment later.
+              </p>
+              <p>
+                Treat this page as a reference for direction, quality, and fit.
+              </p>
+            </div>
+          </Card>
+        }
+      />
 
-        <h1 className="text-5xl font-black leading-tight">
-          {project.title}
-        </h1>
-
-        <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">
-          {project.description}
-        </p>
-      </div>
-
-      <div className="mb-10 grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3">
         {[
           {
-            icon: Users,
+            icon: Layers3,
             label:
-              "Projected squad size",
-            value: `${project.activeMembers}/${project.maxMembers}`,
+              "Public preview",
+            value:
+              "Showcase only",
             text:
-              "This shows the current occupancy against intended capacity.",
+              "This page is meant to help you understand the project direction and quality bar of the program.",
           },
           {
-            icon: Layers3,
-            label: "Project mode",
-            value: project.isShowcase
-              ? "Public preview"
-              : "Internal build track",
+            icon: Sparkles,
+            label:
+              "Assignment model",
+            value:
+              "Register first",
             text:
-              "Participants do not join directly. Admins assign members after review.",
+              "Organizers review profiles and place participants later based on fit and team balance.",
           },
           {
             icon: CalendarDays,
@@ -106,124 +212,141 @@ const ProjectDetails = () => {
               project.season ||
               "To be announced",
             text:
-              "Use this as a sense of timing rather than a guarantee of direct enrollment.",
+              "Use this as program context rather than a direct sign-up commitment.",
           },
         ].map((item) => {
           const Icon = item.icon;
 
           return (
-            <div
+            <Card
               key={item.label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+              className="p-6"
             >
               <Icon
-                className="mb-4 text-cyan-300"
-                size={26}
+                className="text-[var(--soc-teal)]"
+                size={20}
               />
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--soc-ink)]/48">
                 {item.label}
               </p>
-              <h2 className="mt-3 text-2xl font-black">
+              <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[var(--soc-ink)]">
                 {item.value}
               </h2>
-              <p className="mt-3 text-sm leading-6 text-slate-400">
+              <p className="mt-3 text-sm leading-7 text-[var(--soc-text-muted)]">
                 {item.text}
               </p>
-            </div>
+            </Card>
           );
         })}
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr]">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8">
-          <h2 className="text-3xl font-black">
-            Tech stack and signals
-          </h2>
-          <div className="mt-6 flex flex-wrap gap-3">
-            {project.techStack?.map(
-              (tech) => (
-                <span
-                  key={tech}
-                  className="rounded-full bg-[#081121] px-4 py-3 text-sm text-slate-200"
-                >
-                  {tech}
-                </span>
-              )
-            )}
-          </div>
+        <Card
+          strong
+          className="p-6 sm:p-8"
+        >
+          <SectionHeader
+            title="Tools, technologies, and signals"
+            description="A quick view of the stack and the qualities that make this showcase direction stand out."
+          />
+
+          {project.techStack?.length >
+          0 ? (
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              {project.techStack.map(
+                (tech) => (
+                  <Badge
+                    key={tech}
+                    tone="default"
+                  >
+                    {tech}
+                  </Badge>
+                )
+              )}
+            </div>
+          ) : (
+            <p className="mt-6 text-sm leading-7 text-[var(--soc-text-muted)]">
+              The organizers have not attached a tech stack to this public
+              preview yet.
+            </p>
+          )}
 
           {project.highlights?.length >
-            0 && (
+          0 ? (
             <>
-              <h3 className="mt-8 text-xl font-bold">
-                Why this track feels exciting
-              </h3>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                {project.highlights.map(
-                  (highlight) => (
-                    <div
-                      key={highlight}
-                      className="rounded-2xl border border-white/10 bg-[#07101c] p-4 text-sm leading-6 text-slate-300"
-                    >
-                      {highlight}
-                    </div>
-                  )
-                )}
+              <div className="mt-8 border-t border-[var(--soc-border-soft)] pt-8">
+                <h3 className="text-xl font-semibold tracking-[-0.02em] text-[var(--soc-ink)]">
+                  Why this direction stands out
+                </h3>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {project.highlights.map(
+                    (highlight) => (
+                      <CardSection
+                        key={highlight}
+                        className="p-4"
+                      >
+                        <p className="text-sm leading-7 text-[var(--soc-text-muted)]">
+                          {highlight}
+                        </p>
+                      </CardSection>
+                    )
+                  )}
+                </div>
               </div>
             </>
-          )}
-        </div>
+          ) : null}
+        </Card>
 
         <div className="space-y-6">
-          <div className="rounded-[2rem] border border-cyan-500/20 bg-cyan-500/[0.08] p-8">
-            <div className="flex items-center gap-3">
-              <Sparkles
-                className="text-cyan-300"
-                size={22}
-              />
-              <h2 className="text-2xl font-black text-cyan-100">
-                How selection works here
-              </h2>
-            </div>
-            <div className="mt-6 space-y-4 text-sm leading-7 text-slate-200">
+          <Card className="p-6 sm:p-7">
+            <h2 className="text-xl font-semibold tracking-[-0.03em] text-[var(--soc-ink)]">
+              How selection works
+            </h2>
+            <div className="mt-5 space-y-3 text-sm leading-7 text-[var(--soc-text-muted)]">
               <p>
-                1. You register once with your real skills, interests, and availability.
+                1. Register once with honest skills, interests, and
+                availability.
               </p>
               <p>
-                2. The organizers review all registrations and balance teams fairly.
+                2. The organizing team reviews profiles and balances squads
+                thoughtfully.
               </p>
               <p>
-                3. Final project and team assignment appears later in your dashboard.
+                3. Your final assignment appears later in the dashboard and
+                workspace.
               </p>
             </div>
-          </div>
+          </Card>
 
-          <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8">
-            <h2 className="text-2xl font-black">
+          <Card strong className="p-6 sm:p-7">
+            <h2 className="text-xl font-semibold tracking-[-0.03em] text-[var(--soc-ink)]">
               Interested in work like this?
             </h2>
-            <p className="mt-4 text-slate-400">
-              Register with honest preferences and the organizing team will match you to the right track later.
+            <p className="mt-4 text-sm leading-7 text-[var(--soc-text-muted)]">
+              Register with the skills and preferences that genuinely match you.
+              That gives organizers the best information for assignment later.
             </p>
-            <div className="mt-6 flex flex-wrap gap-4">
+            <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 to="/register"
-                className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-6 py-4 font-bold"
+                className={buttonStyles()}
               >
                 Register now
-                <ArrowRight size={18} />
+                <ArrowRight size={16} />
               </Link>
               <Link
                 to="/projects"
-                className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-slate-100 transition hover:border-cyan-400/30"
+                className={buttonStyles({
+                  variant: "secondary",
+                })}
               >
                 Back to showcase
               </Link>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 };
 

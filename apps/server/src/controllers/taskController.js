@@ -1,6 +1,60 @@
 import Project from "../models/Project.js";
 import ProjectMember from "../models/ProjectMember.js";
 import Task from "../models/Task.js";
+import {
+  canTransitionTask,
+  isProjectWorkspaceWritable,
+  normalizeTaskStatus,
+} from "../utils/workflowRules.js";
+
+const getTaskUserFields = (
+  isAdmin
+) => (isAdmin ? "name email" : "name");
+
+const getTaskActorFields = (
+  isAdmin
+) =>
+  isAdmin
+    ? "name authority"
+    : "name";
+
+const populateTaskQuery = (
+  query,
+  {
+    isAdmin = false,
+  } = {}
+) =>
+  query
+    .populate(
+      "assignedTo",
+      getTaskUserFields(isAdmin)
+    )
+    .populate(
+      "createdBy",
+      getTaskUserFields(isAdmin)
+    )
+    .populate(
+      "project",
+      "title domain status"
+    )
+    .populate(
+      "comments.author",
+      getTaskActorFields(isAdmin)
+    )
+    .populate(
+      "activity.actor",
+      getTaskActorFields(isAdmin)
+    );
+
+const appendActivity = (
+  task,
+  entry
+) => {
+  task.activity.push({
+    ...entry,
+    createdAt: new Date(),
+  });
+};
 
 export const createTask = async (
   req,
@@ -16,6 +70,18 @@ export const createTask = async (
       deadline,
     } = req.body;
 
+    if (
+      !title ||
+      !description ||
+      !projectId ||
+      !assignedTo
+    ) {
+      return res.status(400).json({
+        message:
+          "title, description, projectId, and assignedTo are required.",
+      });
+    }
+
     const project =
       await Project.findById(projectId);
 
@@ -25,9 +91,14 @@ export const createTask = async (
       });
     }
 
-    if (project.status === "completed") {
-      return res.status(400).json({
-        message: "Project completed",
+    if (
+      !isProjectWorkspaceWritable(
+        project
+      )
+    ) {
+      return res.status(409).json({
+        message:
+          "Tasks can only be created while the project workspace is active.",
       });
     }
 
@@ -60,16 +131,38 @@ export const createTask = async (
     }
 
     const task = await Task.create({
-      title,
-      description,
+      title: String(title).trim(),
+      description:
+        String(description).trim(),
       project: projectId,
       assignedTo,
+      team: member.team,
       taskType,
       deadline,
       createdBy: req.user._id,
+      status: "todo",
+      activity: [
+        {
+          type: "created",
+          toStatus: "todo",
+          message:
+            "Task created.",
+          actor: req.user._id,
+        },
+      ],
     });
 
-    return res.status(201).json(task);
+    const populatedTask =
+      await populateTaskQuery(
+        Task.findById(task._id),
+        {
+          isAdmin: false,
+        }
+      );
+
+    return res
+      .status(201)
+      .json(populatedTask);
   } catch (error) {
     return res.status(500).json({
       message: error.message,
@@ -99,20 +192,17 @@ export const getProjectTasks =
         }
       }
 
-      const tasks = await Task.find({
-        project: req.params.projectId,
-      })
-        .populate(
-          "assignedTo",
-          "name email"
-        )
-        .populate(
-          "createdBy",
-          "name"
-        )
-        .sort({
-          createdAt: -1,
-        });
+      const tasks =
+        await populateTaskQuery(
+          Task.find({
+            project: req.params.projectId,
+          }).sort({
+            createdAt: -1,
+          }),
+          {
+            isAdmin,
+          }
+        );
 
       return res.json(tasks);
     } catch (error) {
@@ -128,6 +218,7 @@ export const updateTaskStatus =
       const {
         status,
         submissionLink,
+        note,
       } = req.body;
 
       const task =
@@ -146,35 +237,64 @@ export const updateTaskStatus =
           task.project
         );
 
-      if (project.status === "completed") {
-        return res.status(400).json({
-          message: "Project completed",
+      if (!project) {
+        return res.status(404).json({
+          message:
+            "Project not found for this task.",
         });
       }
-
-      const isLeader =
-        await ProjectMember.findOne({
-          user: req.user._id,
-          project: task.project,
-          isLeader: true,
-          status: "active",
-        });
 
       if (
-        task.assignedTo.toString()
-          !==
-          req.user._id.toString()
-        &&
-        !isLeader
-        &&
-        req.user.authority !== "admin"
+        !isProjectWorkspaceWritable(
+          project
+        )
       ) {
-        return res.status(403).json({
-          message: "Not authorized",
+        return res.status(409).json({
+          message:
+            "This workspace is read-only, so task progress cannot be changed right now.",
         });
       }
 
-      task.status = status;
+      if (
+        task.assignedTo.toString() !==
+        req.user._id.toString()
+      ) {
+        return res.status(403).json({
+          message:
+            "Only the assigned member can update this task.",
+        });
+      }
+
+      const currentStatus =
+        normalizeTaskStatus(task.status);
+      const nextStatus =
+        normalizeTaskStatus(status);
+
+      if (
+        ["approved", "rejected"].includes(
+          nextStatus
+        )
+      ) {
+        return res.status(400).json({
+          message:
+            "Approval and rejection happen from admin review.",
+        });
+      }
+
+      if (
+        !canTransitionTask({
+          currentStatus,
+          nextStatus,
+          actor: "member",
+        })
+      ) {
+        return res.status(400).json({
+          message:
+            `Tasks cannot move from ${currentStatus} to ${nextStatus} here.`,
+        });
+      }
+
+      task.status = nextStatus;
 
       if (submissionLink) {
         task.submissionLinks.push({
@@ -183,9 +303,32 @@ export const updateTaskStatus =
         });
       }
 
+      if (typeof note === "string") {
+        task.remarks =
+          note.trim();
+      }
+
+      appendActivity(task, {
+        type: "status-changed",
+        fromStatus: currentStatus,
+        toStatus: nextStatus,
+        message:
+          String(note || "").trim() ||
+          `Status updated to ${nextStatus}.`,
+        actor: req.user._id,
+      });
+
       await task.save();
 
-      return res.json(task);
+      const updatedTask =
+        await populateTaskQuery(
+          Task.findById(task._id),
+          {
+            isAdmin: false,
+          }
+        );
+
+      return res.json(updatedTask);
     } catch (error) {
       return res.status(500).json({
         message: error.message,
@@ -193,11 +336,16 @@ export const updateTaskStatus =
     }
   };
 
-export const approveTask = async (
+export const reviewTask = async (
   req,
   res
 ) => {
   try {
+    const {
+      status,
+      reviewNote,
+    } = req.body;
+
     const task =
       await Task.findById(
         req.params.id
@@ -209,12 +357,55 @@ export const approveTask = async (
       });
     }
 
-    task.status = "approved";
+    const currentStatus =
+      normalizeTaskStatus(task.status);
+    const nextStatus =
+      normalizeTaskStatus(status);
+
+    if (
+      !canTransitionTask({
+        currentStatus,
+        nextStatus,
+        actor: "admin",
+      })
+    ) {
+      return res.status(400).json({
+        message:
+          `Tasks in ${currentStatus} cannot be moved to ${nextStatus} from admin review.`,
+      });
+    }
+
+    task.status = nextStatus;
+    task.remarks = String(
+      reviewNote || ""
+    ).trim();
+
+    appendActivity(task, {
+      type: "reviewed",
+      fromStatus: currentStatus,
+      toStatus: nextStatus,
+      message:
+        task.remarks ||
+        `Task ${nextStatus}.`,
+      actor: req.user._id,
+    });
+
     await task.save();
 
+    const updatedTask =
+      await populateTaskQuery(
+        Task.findById(task._id),
+        {
+          isAdmin: true,
+        }
+      );
+
     return res.json({
-      message: "Task approved",
-      task,
+      message:
+        nextStatus === "approved"
+          ? "Task approved"
+          : "Task sent back for more work",
+      task: updatedTask,
     });
   } catch (error) {
     return res.status(500).json({
@@ -223,27 +414,28 @@ export const approveTask = async (
   }
 };
 
+export const approveTask = async (
+  req,
+  res
+) => {
+  req.body.status = "approved";
+  return reviewTask(req, res);
+};
+
 export const getAllTasks = async (
   req,
   res
 ) => {
   try {
-    const tasks = await Task.find()
-      .populate(
-        "project",
-        "title domain status"
-      )
-      .populate(
-        "assignedTo",
-        "name email"
-      )
-      .populate(
-        "createdBy",
-        "name email"
-      )
-      .sort({
-        createdAt: -1,
-      });
+    const tasks =
+      await populateTaskQuery(
+        Task.find().sort({
+          createdAt: -1,
+        }),
+        {
+          isAdmin: true,
+        }
+      );
 
     return res.json(tasks);
   } catch (error) {
@@ -258,16 +450,16 @@ export const getMyTasks = async (
   res
 ) => {
   try {
-    const tasks = await Task.find({
-      assignedTo: req.user._id,
-    })
-      .populate(
-        "project",
-        "title"
-      )
-      .populate(
-        "createdBy",
-        "name"
+    const tasks =
+      await populateTaskQuery(
+        Task.find({
+          assignedTo: req.user._id,
+        }).sort({
+          createdAt: -1,
+        }),
+        {
+          isAdmin: false,
+        }
       );
 
     return res.json(tasks);
@@ -277,3 +469,98 @@ export const getMyTasks = async (
     });
   }
 };
+
+export const addTaskComment =
+  async (req, res) => {
+    try {
+      const message = String(
+        req.body.message || ""
+      ).trim();
+
+      if (!message) {
+        return res.status(400).json({
+          message:
+            "Comment message is required.",
+        });
+      }
+
+      const task =
+        await Task.findById(
+          req.params.id
+        );
+
+      if (!task) {
+        return res.status(404).json({
+          message: "Task not found",
+        });
+      }
+
+      if (req.user.authority !== "admin") {
+        const membership =
+          await ProjectMember.findOne({
+            user: req.user._id,
+            project: task.project,
+            status: "active",
+          });
+
+        if (!membership) {
+          return res.status(403).json({
+            message:
+              "Not authorized to comment on this task.",
+          });
+        }
+
+        const project =
+          await Project.findById(
+            task.project
+          );
+
+        if (!project) {
+          return res.status(404).json({
+            message:
+              "Project not found for this task.",
+          });
+        }
+
+        if (
+          !isProjectWorkspaceWritable(
+            project
+          )
+        ) {
+          return res.status(409).json({
+            message:
+              "This workspace is read-only, so task comments are locked right now.",
+          });
+        }
+      }
+
+      task.comments.push({
+        author: req.user._id,
+        message,
+      });
+
+      appendActivity(task, {
+        type: "comment-added",
+        message,
+        actor: req.user._id,
+      });
+
+      await task.save();
+
+      const updatedTask =
+        await populateTaskQuery(
+          Task.findById(task._id),
+          {
+            isAdmin:
+              req.user.authority ===
+              "admin",
+          }
+        );
+
+      return res.json(updatedTask);
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
+      });
+    }
+  };

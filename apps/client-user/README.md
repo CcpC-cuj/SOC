@@ -7,7 +7,7 @@ React frontend for the SOC registration and assignment workflow.
 Create `.env` from `.env.example`:
 
 ```bash
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5001/api
 ```
 
 ## Scripts

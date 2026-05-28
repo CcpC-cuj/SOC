@@ -10,9 +10,35 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import {
+  Card,
+  CardSection,
+} from "../components/ui/Card";
+import {
+  FieldLabel,
+  InlineMessage,
+  Input,
+} from "../components/ui/Field";
 import {
   resetPassword,
 } from "../services/authService";
+
+const resetNotes = [
+  {
+    icon: ShieldCheck,
+    title: "Short-lived link",
+    text:
+      "Reset links expire quickly so only the intended recipient can use them.",
+  },
+  {
+    icon: KeyRound,
+    title: "One clean handoff",
+    text:
+      "After saving a new password, sign in again from the login screen and continue normally.",
+  },
+];
 
 const ResetPassword = () => {
   const [searchParams] =
@@ -97,13 +123,8 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050816] px-4 py-20 text-white sm:px-6 lg:px-8">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute left-0 top-0 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-fuchsia-500/10 blur-3xl" />
-      </div>
-
-      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+    <div className="min-h-screen py-10 sm:py-14">
+      <div className="mx-auto grid max-w-[84rem] gap-8 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 xl:px-10">
         <motion.section
           initial={{
             opacity: 0,
@@ -118,47 +139,37 @@ const ResetPassword = () => {
           }}
           className="space-y-6"
         >
-          <div className="inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200">
-            Secure reset
+          <Badge tone="warning">
+            Secure password reset
+          </Badge>
+
+          <div className="space-y-4">
+            <h1 className="max-w-2xl text-4xl font-semibold tracking-[-0.05em] text-[var(--soc-ink)] sm:text-5xl lg:text-[3.35rem]">
+              Choose a fresh password and return to your account with confidence.
+            </h1>
+            <p className="max-w-2xl text-base leading-8 text-[var(--soc-text-muted)] sm:text-lg">
+              Set a new password for your SOC account and continue through the
+              normal sign-in flow afterward.
+            </p>
           </div>
 
-          <h1 className="max-w-2xl text-5xl font-black leading-tight">
-            Choose a fresh password and get moving again.
-          </h1>
-
           <div className="grid gap-4">
-            {[
-              {
-                icon: ShieldCheck,
-                title: "Short-lived link",
-                text:
-                  "Reset links expire quickly so only you can use them.",
-              },
-              {
-                icon: KeyRound,
-                title: "One clean handoff",
-                text:
-                  "After saving your new password, sign in again from the login screen.",
-              },
-            ].map((item) => {
+            {resetNotes.map((item) => {
               const Icon = item.icon;
 
               return (
-                <div
-                  key={item.title}
-                  className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
-                >
+                <Card key={item.title} className="p-5">
                   <Icon
                     size={20}
-                    className="text-cyan-300"
+                    className="text-[var(--soc-teal)]"
                   />
-                  <h2 className="mt-4 text-xl font-bold">
+                  <h2 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-[var(--soc-ink)]">
                     {item.title}
                   </h2>
-                  <p className="mt-2 text-slate-400">
+                  <p className="mt-2 text-sm leading-7 text-[var(--soc-text-muted)]">
                     {item.text}
                   </p>
-                </div>
+                </Card>
               );
             })}
           </div>
@@ -167,7 +178,7 @@ const ResetPassword = () => {
         <motion.section
           initial={{
             opacity: 0,
-            scale: 0.96,
+            scale: 0.98,
           }}
           animate={{
             opacity: 1,
@@ -175,91 +186,98 @@ const ResetPassword = () => {
           }}
           transition={{
             duration: 0.5,
-            delay: 0.1,
+            delay: 0.08,
           }}
-          className="rounded-[2.25rem] border border-white/10 bg-white/[0.05] p-8 backdrop-blur-xl sm:p-10"
         >
-          <h2 className="text-3xl font-black">
-            Reset password
-          </h2>
-          <p className="mt-3 text-slate-400">
-            Choose a new password for your SOC account.
-          </p>
+          <Card strong className="p-6 sm:p-8 lg:p-10">
+            <div className="mb-8 space-y-3 border-b border-[var(--soc-border-soft)] pb-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--soc-ink)]/48">
+                Reset password
+              </p>
+              <h2 className="text-3xl font-semibold tracking-[-0.04em] text-[var(--soc-ink)] sm:text-4xl">
+                Save new password
+              </h2>
+              <p className="max-w-2xl text-sm leading-7 text-[var(--soc-text-muted)] sm:text-base">
+                Choose a new password for your account. The reset token is
+                validated while you submit this form.
+              </p>
+            </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="mt-8 space-y-6"
-          >
-            <label className="block">
-              <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
-                <KeyRound size={18} />
-                New password
-              </span>
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
-                placeholder="Minimum 6 characters"
-                required
-              />
-            </label>
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6"
+            >
+              <label className="block">
+                <FieldLabel className="mb-3 flex items-center gap-2">
+                  <KeyRound size={16} />
+                  New password
+                </FieldLabel>
+                <Input
+                  type="password"
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Minimum 6 characters"
+                  required
+                />
+              </label>
 
-            <label className="block">
-              <span className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
-                <ShieldCheck size={18} />
-                Confirm password
-              </span>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-white/10 bg-[#081121] px-5 py-4 outline-none transition focus:border-cyan-400"
-                placeholder="Repeat the password"
-                required
-              />
-            </label>
+              <label className="block">
+                <FieldLabel className="mb-3 flex items-center gap-2">
+                  <ShieldCheck size={16} />
+                  Confirm password
+                </FieldLabel>
+                <Input
+                  type="password"
+                  name="confirmPassword"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Repeat the password"
+                  required
+                />
+              </label>
 
-            {error && (
-              <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                {error}
+              {error ? (
+                <InlineMessage tone="error">
+                  {error}
+                </InlineMessage>
+              ) : null}
+
+              {message ? (
+                <InlineMessage tone="success">
+                  {message}
+                </InlineMessage>
+              ) : null}
+
+              <Button
+                type="submit"
+                block
+                size="lg"
+                loading={loading}
+                loadingLabel="Saving password..."
+              >
+                Save new password
+                <ArrowRight size={18} />
+              </Button>
+            </form>
+
+            <CardSection className="mt-8 p-5 sm:p-6">
+              <div className="flex flex-wrap gap-4 text-sm">
+                <Link
+                  to="/login"
+                  className="font-semibold text-[var(--soc-teal)] transition hover:text-[var(--soc-ink)]"
+                >
+                  Back to login
+                </Link>
+                <Link
+                  to="/forgot-password"
+                  className="font-semibold text-[var(--soc-teal)] transition hover:text-[var(--soc-ink)]"
+                >
+                  Need another link?
+                </Link>
               </div>
-            )}
-
-            {message && (
-              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
-                {message}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-8 py-4 text-lg font-bold transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {loading
-                ? "Saving..."
-                : "Save new password"}
-              <ArrowRight size={18} />
-            </button>
-          </form>
-
-          <div className="mt-8 flex flex-wrap gap-4 text-sm text-slate-400">
-            <Link
-              to="/login"
-              className="text-cyan-300 transition hover:text-cyan-100"
-            >
-              Back to login
-            </Link>
-            <Link
-              to="/forgot-password"
-              className="text-fuchsia-300 transition hover:text-fuchsia-100"
-            >
-              Need another link?
-            </Link>
-          </div>
+            </CardSection>
+          </Card>
         </motion.section>
       </div>
     </div>
